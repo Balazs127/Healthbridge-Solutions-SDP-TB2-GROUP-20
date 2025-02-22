@@ -1,8 +1,11 @@
-// import { useState } from "react";
-// import "./App.css";
 import { useState, useEffect } from "react";
-import GFRCalculator from "./components/GFRCalculator";
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from "react-router-dom";
+import Home from "./views/Home";
+import Calculator from "./views/Calculator";
+import CalculationData from "./views/CalculationData";
+import Login from "./views/Login";
 import axios from "axios";
+import "./App.css"; // Assuming you have a CSS file for additional styles
 
 function App() {
   const [mongoData, setMongoData] = useState([]);
@@ -11,7 +14,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/data")
+      .get("http://localhost:5000/api/egfr_calculations")
       .then((response) => {
         setMongoData(response.data);
         setLoading(false);
@@ -24,32 +27,50 @@ function App() {
   }, []);
 
   return (
-    <div style={styles.body}>
-      <header style={styles.header}>
-        <h1 style={styles.h1}>Healthbridge Solutions</h1>
-      </header>
-      <main style={styles.main}>
-        <p style={styles.p}>Welcome to Healthbridge Solutions, your GFR calculation resource.</p>
-        <GFRCalculator />
-
-        <h2 style={styles.h2}>Sample Weather Data</h2>
-        {loading ? (
-          <p>Loading data...</p>
-        ) : error ? (
-          <p>{error}</p>
-        ) : (
-          <ul style={styles.dataList}>
-            {console.log("mongoData", mongoData)}
-            {mongoData.map((item, index) => (
-              <li key={index} style={styles.dataItem}>
-                Station: {item.st} | Elevation: {item.elevation} | Call Letters: {item.callLetters}
+    <Router>
+      <div style={styles.body}>
+        <header style={styles.header}>
+          <nav style={styles.nav}>
+            <h1 style={styles.h1}>Healthbridge Solutions</h1>
+            <ul style={styles.navList}>
+              <li style={styles.navItem}>
+                <Link to="/" style={styles.navLink}>
+                  Home
+                </Link>
               </li>
-            ))}
-          </ul>
-        )}
-      </main>
-      <footer style={styles.footer}>© 2025 Healthbridge Solutions</footer>
-    </div>
+              <li style={styles.navItem}>
+                <Link to="/calculator" style={styles.navLink}>
+                  GFR Calculator
+                </Link>
+              </li>
+              <li style={styles.navItem}>
+                <Link to="/calculationData" style={styles.navLink}>
+                  Calculation Data
+                </Link>
+              </li>
+              <li style={styles.navItem}>
+                <Link to="/login" style={styles.navLink}>
+                  Login
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        </header>
+        <main style={styles.main}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/home" />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/calculator" element={<Calculator />} />
+            <Route
+              path="/calculationData"
+              element={<CalculationData mongoData={mongoData} loading={loading} error={error} />}
+            />
+            <Route path="/login" element={<Login />} />
+          </Routes>
+        </main>
+        <footer style={styles.footer}>© 2025 Healthbridge Solutions</footer>
+      </div>
+    </Router>
   );
 }
 
@@ -57,6 +78,9 @@ export default App;
 
 const styles = {
   body: {
+    display: "flex",
+    flexDirection: "column",
+    minHeight: "100vh",
     fontFamily: "Arial, sans-serif",
     margin: 0,
     padding: 0,
@@ -69,7 +93,26 @@ const styles = {
     padding: "1rem",
     textAlign: "center",
   },
+  nav: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  navList: {
+    listStyle: "none",
+    display: "flex",
+    margin: 0,
+    padding: 0,
+  },
+  navItem: {
+    marginLeft: "1rem",
+  },
+  navLink: {
+    color: "white",
+    textDecoration: "none",
+  },
   main: {
+    flex: 1,
     padding: "2rem",
     textAlign: "center",
   },
@@ -79,12 +122,8 @@ const styles = {
     textAlign: "center",
     padding: "1rem",
     width: "100%",
-    bottom: 0,
   },
   h1: {
     margin: 0,
-  },
-  p: {
-    fontSize: "1.2rem",
   },
 };

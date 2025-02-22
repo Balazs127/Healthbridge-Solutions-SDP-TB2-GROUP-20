@@ -28,10 +28,11 @@ async function startServer() {
     console.log("Connected to MongoDB");
 
     // Define collections and automatically generate routes
-    const collections = ["data"];
+    const collections = ["patientlogin", "egfr_calculations", "clinicianlogin"];
+    const dbName = "healthbridge";
 
-    collections.forEach((collection) => {
-      app.use(`/api/${collection}`, createCrudRoutes(client, "sample_weatherdata", collection));
+    collections.forEach((col) => {
+      app.use(`/api/${col}`, createCrudRoutes(client, dbName, col));
     });
 
     // Server Start

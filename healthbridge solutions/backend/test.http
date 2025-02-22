@@ -1,0 +1,33 @@
+### POST patient
+POST http://localhost:5000/api/patientlogin
+Content-Type: application/json
+
+{
+  "PasswordHash": "p100999",
+  "FirstName": "Alice",
+  "LastName": "Walker",
+  "DOB": "1990-02-22",
+  "Gender": "Female",
+  "Ethnicity": "Caucasian",
+  "Email": "alice.walker@example.com",
+  "PhoneNumber": null,
+  "CreatedAt": "2025-02-22 16:00:00"
+}
+
+### Patch patient
+PATCH http://localhost:5000/api/patientlogin/2000000022
+Content-Type: application/json
+
+{
+  "PhoneNumber": "123-456-7890"
+}
+
+### Get all patients
+GET http://localhost:5000/api/patientlogin
+
+### Get all calculations
+GET http://localhost:5000/api/egfr_calculations
+
+### Get specific calculation
+GET http://localhost:5000/api/egfr_calculations/47
+Accept: application/json
