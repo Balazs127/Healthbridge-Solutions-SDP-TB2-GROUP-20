@@ -1,4 +1,6 @@
 import express from "express";
+import { generateNextId } from "../generateId.js";
+import { idConfig } from "../idConfig.js";
 
 const createCrudRoutes = (client, dbName, collectionName) => {
   const router = express.Router();
@@ -17,22 +19,31 @@ const createCrudRoutes = (client, dbName, collectionName) => {
   // GET a document by ID
   router.get("/:id", async (req, res) => {
     try {
-      const { ObjectId } = await import("mongodb");
-      const document = await collection.findOne({ _id: new ObjectId(req.params.id) });
-      if (!document) return res.status(404).json({ message: "Document not found" });
+      const document = await collection.findOne({ _id: req.params.id });
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
       res.status(200).json(document);
     } catch (error) {
       res.status(500).json({ message: "Error fetching document", error });
     }
   });
 
-  // POST - Create a new document
+  // POST - Create new document
   router.post("/", async (req, res) => {
     try {
-      const newDoc = req.body;
+      let newDoc = { ...req.body };
+
+      const config = idConfig[collectionName];
+      if (config && !newDoc._id) {
+        const nextId = await generateNextId(collection, config);
+        newDoc._id = nextId;
+      }
+
       const result = await collection.insertOne(newDoc);
       res.status(201).json(result);
     } catch (error) {
+      console.error("Error in POST:", error);
       res.status(500).json({ message: "Error adding document", error });
     }
   });
@@ -40,9 +51,8 @@ const createCrudRoutes = (client, dbName, collectionName) => {
   // PUT - Replace a document by ID
   router.put("/:id", async (req, res) => {
     try {
-      const { ObjectId } = await import("mongodb");
       const updatedDoc = req.body;
-      const result = await collection.replaceOne({ _id: new ObjectId(req.params.id) }, updatedDoc);
+      const result = await collection.replaceOne({ _id: req.params.id }, updatedDoc);
       res.status(200).json(result);
     } catch (error) {
       res.status(500).json({ message: "Error updating document", error });
@@ -52,12 +62,8 @@ const createCrudRoutes = (client, dbName, collectionName) => {
   // PATCH - Update part of a document by ID
   router.patch("/:id", async (req, res) => {
     try {
-      const { ObjectId } = await import("mongodb");
       const updates = req.body;
-      const result = await collection.updateOne(
-        { _id: new ObjectId(req.params.id) },
-        { $set: updates }
-      );
+      const result = await collection.updateOne({ _id: req.params.id }, { $set: updates });
       res.status(200).json(result);
     } catch (error) {
       res.status(500).json({ message: "Error updating document", error });
@@ -67,8 +73,7 @@ const createCrudRoutes = (client, dbName, collectionName) => {
   // DELETE - Remove a document by ID
   router.delete("/:id", async (req, res) => {
     try {
-      const { ObjectId } = await import("mongodb");
-      const result = await collection.deleteOne({ _id: new ObjectId(req.params.id) });
+      const result = await collection.deleteOne({ _id: req.params.id });
       res.status(200).json(result);
     } catch (error) {
       res.status(500).json({ message: "Error deleting document", error });

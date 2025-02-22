@@ -6,6 +6,17 @@ export default function GFRCalculator() {
   const [gender, setGender] = useState("");
   const [ethnicity, setEthnicity] = useState("");
   const [egfr, setEGFR] = useState("");
+  const [ckdStage, setCKDStage] = useState("");
+  const [previousResults, setPreviousResults] = useState([]);
+
+  const determineCKDStage = (egfrValue) => {
+    if (egfrValue >= 90) return "Stage 1 (Normal or High)";
+    if (egfrValue >= 60) return "Stage 2 (Mildly Decreased)";
+    if (egfrValue >= 45) return "Stage 3A (Mild to Moderate Decrease)";
+    if (egfrValue >= 30) return "Stage 3B (Moderate to Severe Decrease)";
+    if (egfrValue >= 15) return "Stage 4 (Severely Decreased)";
+    return "Stage 5 (Kidney Failure)";
+  };
 
   const calculateEGFR = () => {
     const creatValue = parseFloat(creatinine);
@@ -13,23 +24,26 @@ export default function GFRCalculator() {
       setEGFR("Invalid creatinine level");
       return;
     }
-    let creatInMg = creatValue / 88.4;
     let gFactor = gender.toLowerCase() === "female" ? 0.742 : 1;
     let eFactor = ethnicity.toLowerCase() === "black" ? 1.21 : 1;
     let formula =
       186 *
-      Math.pow(creatInMg, -1.154) *
+      Math.pow(creatValue, -1.154) *
       Math.pow(parseFloat(age) || 1, -0.203) *
       gFactor *
       eFactor;
-    setEGFR(formula.toFixed(2) + " ml/min/1.73m²");
+    const egfrValue = parseFloat(formula.toFixed(2));
+    const stage = determineCKDStage(egfrValue);
+    setEGFR(`${egfrValue} ml/min/1.73m²`);
+    setCKDStage(stage);
+    setPreviousResults([...previousResults, { egfr: egfrValue, stage }]);
   };
 
   return (
     <div>
       <h2>eGFR Calculator</h2>
       <div>
-        <label>Creatinine (µmol/L): </label>
+        <label>Creatinine (mg/dL): </label>
         <input type="number" value={creatinine} onChange={(e) => setCreatinine(e.target.value)} />
       </div>
       <div>
@@ -45,7 +59,24 @@ export default function GFRCalculator() {
         <input value={ethnicity} onChange={(e) => setEthnicity(e.target.value)} />
       </div>
       <button onClick={calculateEGFR}>Calculate eGFR</button>
-      {egfr && <p>Result: {egfr}</p>}
+      {egfr && (
+        <div>
+          <p>Result: {egfr}</p>
+          <p>CKD Stage: {ckdStage}</p>
+        </div>
+      )}
+      {previousResults.length > 0 && (
+        <div>
+          <h3>Previous Results</h3>
+          <ul>
+            {previousResults.map((result, index) => (
+              <li key={index}>
+                eGFR: {result.egfr} ml/min/1.73m² - CKD Stage: {result.stage}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

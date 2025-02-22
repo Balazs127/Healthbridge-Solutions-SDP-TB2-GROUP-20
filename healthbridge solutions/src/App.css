@@ -6,8 +6,29 @@
   --footer-color: #1d3557;
 }
 
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
 body {
-  font-family: "Arial", sans-serif;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
   background-color: var(--background-color);
