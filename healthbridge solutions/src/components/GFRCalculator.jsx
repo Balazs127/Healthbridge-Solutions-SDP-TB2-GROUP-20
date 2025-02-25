@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BarGraph from "./BarGraph";
 
 export default function GFRCalculator() {
   const [creatinine, setCreatinine] = useState("");
@@ -39,6 +40,11 @@ export default function GFRCalculator() {
     setPreviousResults([...previousResults, { egfr: egfrValue, stage }]);
   };
 
+  const graphData = previousResults.map((result, index) => ({
+    index: index + 1,
+    egfr: result.egfr,
+  }));
+
   return (
     <div>
       <h2>eGFR Calculator</h2>
@@ -52,11 +58,23 @@ export default function GFRCalculator() {
       </div>
       <div>
         <label>Gender (male/female): </label>
-        <input value={gender} onChange={(e) => setGender(e.target.value)} />
+        <select value={gender} onChange={(e) => setGender(e.target.value)}>
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
       </div>
       <div>
-        <label>Ethnicity (black/other): </label>
-        <input value={ethnicity} onChange={(e) => setEthnicity(e.target.value)} />
+        <label>Ethnicity: </label>
+        <select value={ethnicity} onChange={(e) => setEthnicity(e.target.value)}>
+          <option value="">Select Ethnicity</option>
+          <option value="black">Black</option>
+          <option value="other">White</option>
+          <option value="other">Asian</option>
+          <option value="other">Indian</option>
+          <option value="other">White</option>
+          <option value="other">Other</option>
+        </select>
       </div>
       <button onClick={calculateEGFR}>Calculate eGFR</button>
       {egfr && (
@@ -75,6 +93,7 @@ export default function GFRCalculator() {
               </li>
             ))}
           </ul>
+          <BarGraph data={graphData} />
         </div>
       )}
     </div>

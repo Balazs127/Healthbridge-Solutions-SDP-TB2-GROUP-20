@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link, Navigate } from "react-ro
 import Home from "./views/Home";
 import Calculator from "./views/Calculator";
 import CalculationData from "./views/CalculationData";
+import Profile from "./views/Profile";
 import Login from "./views/Login";
 import axios from "axios";
 import "./App.css"; // Assuming you have a CSS file for additional styles
@@ -49,6 +50,11 @@ function App() {
                 </Link>
               </li>
               <li style={styles.navItem}>
+                <Link to="/profile" style={styles.navLink}>
+                  Profile
+                </Link>
+              </li>
+              <li style={styles.navItem}>
                 <Link to="/login" style={styles.navLink}>
                   Login
                 </Link>
@@ -61,6 +67,7 @@ function App() {
             <Route path="/" element={<Navigate to="/home" />} />
             <Route path="/home" element={<Home />} />
             <Route path="/calculator" element={<Calculator />} />
+            <Route path="/profile" element={<Profile />} />
             <Route
               path="/calculationData"
               element={<CalculationData mongoData={mongoData} loading={loading} error={error} />}
