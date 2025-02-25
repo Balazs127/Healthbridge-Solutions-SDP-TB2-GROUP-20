@@ -15,7 +15,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/egfr_calculations")
+      .get("http://localhost:5000/api/egfr_calculations?field=PatientID&value=2000000002")
       .then((response) => {
         setMongoData(response.data);
         setLoading(false);

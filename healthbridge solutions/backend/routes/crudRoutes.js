@@ -9,7 +9,14 @@ const createCrudRoutes = (client, dbName, collectionName) => {
   // GET all documents
   router.get("/", async (req, res) => {
     try {
-      const data = await collection.find({}).toArray();
+      const { field, value } = req.query;
+      const query = {};
+
+      if (field && value) {
+        query[field] = value;
+      }
+
+      const data = await collection.find(query).toArray();
       res.status(200).json(data);
     } catch (error) {
       res.status(500).json({ message: "Error fetching data", error });

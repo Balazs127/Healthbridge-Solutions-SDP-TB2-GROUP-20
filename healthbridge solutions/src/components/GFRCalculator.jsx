@@ -3,12 +3,14 @@ import BarGraph from "./BarGraph";
 
 export default function GFRCalculator() {
   const [creatinine, setCreatinine] = useState("");
+  const [creatinineUnit, setCreatinineUnit] = useState("mg/dL");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [ethnicity, setEthnicity] = useState("");
   const [egfr, setEGFR] = useState("");
   const [ckdStage, setCKDStage] = useState("");
   const [previousResults, setPreviousResults] = useState([]);
+  const [pediatricMessage, setPediatricMessage] = useState("");
 
   const determineCKDStage = (egfrValue) => {
     if (egfrValue >= 90) return "Stage 1 (Normal or High)";
@@ -19,25 +21,51 @@ export default function GFRCalculator() {
     return "Stage 5 (Kidney Failure)";
   };
 
+  const handleCreatinineUnitChange = (e) => {
+    const newUnit = e.target.value;
+    let newCreatinine = parseFloat(creatinine);
+
+    if (creatinineUnit === "mg/dL" && newUnit === "µmol/L") {
+      newCreatinine = newCreatinine * 88.4;
+    } else if (creatinineUnit === "µmol/L" && newUnit === "mg/dL") {
+      newCreatinine = newCreatinine / 88.4;
+    }
+
+    setCreatinineUnit(newUnit);
+    setCreatinine(newCreatinine.toFixed(2));
+  };
+
   const calculateEGFR = () => {
-    const creatValue = parseFloat(creatinine);
+    let creatValue = parseFloat(creatinine);
+    const ageValue = parseFloat(age);
+
     if (isNaN(creatValue) || creatValue <= 0) {
       setEGFR("Invalid creatinine level");
       return;
     }
+
+    if (isNaN(ageValue) || ageValue < 18) {
+      setPediatricMessage(
+        "For users under 18 years old, please use the Pediatric version of the calculator."
+      );
+      return;
+    }
+
+    // Convert creatinine to mg/dL if the unit is µmol/L
+    if (creatinineUnit === "µmol/L") {
+      creatValue = creatValue / 88.4;
+    }
+
     let gFactor = gender.toLowerCase() === "female" ? 0.742 : 1;
     let eFactor = ethnicity.toLowerCase() === "black" ? 1.21 : 1;
     let formula =
-      186 *
-      Math.pow(creatValue, -1.154) *
-      Math.pow(parseFloat(age) || 1, -0.203) *
-      gFactor *
-      eFactor;
+      186 * Math.pow(creatValue, -1.154) * Math.pow(ageValue || 1, -0.203) * gFactor * eFactor;
     const egfrValue = parseFloat(formula.toFixed(2));
     const stage = determineCKDStage(egfrValue);
     setEGFR(`${egfrValue} ml/min/1.73m²`);
     setCKDStage(stage);
     setPreviousResults([...previousResults, { egfr: egfrValue, stage }]);
+    setPediatricMessage("");
   };
 
   const graphData = previousResults.map((result, index) => ({
@@ -49,8 +77,12 @@ export default function GFRCalculator() {
     <div>
       <h2>eGFR Calculator</h2>
       <div>
-        <label>Creatinine (mg/dL): </label>
+        <label>Creatinine: </label>
         <input type="number" value={creatinine} onChange={(e) => setCreatinine(e.target.value)} />
+        <select value={creatinineUnit} onChange={handleCreatinineUnitChange}>
+          <option value="mg/dL">mg/dL</option>
+          <option value="µmol/L">µmol/L</option>
+        </select>
       </div>
       <div>
         <label>Age (years): </label>
@@ -77,6 +109,11 @@ export default function GFRCalculator() {
         </select>
       </div>
       <button onClick={calculateEGFR}>Calculate eGFR</button>
+      {pediatricMessage && (
+        <div>
+          <p>{pediatricMessage}</p>
+        </div>
+      )}
       {egfr && (
         <div>
           <p>Result: {egfr}</p>

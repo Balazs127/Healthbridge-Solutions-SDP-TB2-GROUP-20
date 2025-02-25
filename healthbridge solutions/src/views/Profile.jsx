@@ -3,9 +3,12 @@ import axios from "axios";
 
 const Profile = () => {
   const [patient, setPatient] = useState(null);
+  const [calculations, setCalculations] = useState([]);
+  const [alertNeeded, setAlertNeeded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Fetch patient data
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/patientlogin/2000000002")
@@ -17,6 +20,31 @@ const Profile = () => {
         console.error("Error fetching patient data:", err);
         setError("Failed to load patient data");
         setLoading(false);
+      });
+  }, []);
+
+  // Fetch eGFR calculations and check if the most recent is older than 3 months
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/api/egfr_calculations?field=PatientID&value=2000000002")
+      .then((response) => {
+        setCalculations(response.data);
+
+        if (response.data.length > 0) {
+          const sorted = response.data.sort(
+            (a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt)
+          );
+          const mostRecent = new Date(sorted[0].CreatedAt);
+          const now = new Date();
+          const diffInDays = (now - mostRecent) / (1000 * 60 * 60 * 24);
+
+          if (diffInDays > 90) {
+            setAlertNeeded(true);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching calculations:", err);
       });
   }, []);
 
@@ -41,6 +69,11 @@ const Profile = () => {
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Profile</h2>
+      {alertNeeded && (
+        <p style={{ color: "red", marginBottom: "1rem" }}>
+          Your most recent eGFR calculation is older than 3 months. Please check in.
+        </p>
+      )}
       <p style={styles.text}>
         Welcome to your profile page, {patient?.FirstName} {patient?.LastName}.
       </p>
