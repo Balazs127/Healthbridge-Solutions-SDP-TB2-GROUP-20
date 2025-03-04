@@ -1,19 +1,62 @@
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../hooks/useUser";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    if (!user.isAuthenticated) return;
+
+    // Determine the API endpoint based on user type
+    const endpoint =
+      user.userType === "patient"
+        ? `http://localhost:5000/api/patientlogin/${user.userId}`
+        : `http://localhost:5000/api/clinicianlogin/${user.userId}`;
+
+    axios
+      .get(endpoint)
+      .then((response) => {
+        setUserData(response.data);
+      })
+      .catch((err) => {
+        console.error(`Error fetching ${user.userType} data:`, err);
+      });
+  }, [user.isAuthenticated, user.userId, user.userType]);
 
   const handleGetStartedClick = () => {
-    navigate("/calculator");
+    if (!user.isAuthenticated) {
+      navigate("/login");
+    } else {
+      navigate("/calculator");
+    }
+  };
+
+  // Determine what name to display
+  const getWelcomeMessage = () => {
+    if (!user.isAuthenticated) {
+      return "Welcome to Healthbridge Solutions";
+    }
+
+    // If we have user data with FirstName, use it
+    if (userData && userData.FirstName) {
+      return `Welcome, ${userData.FirstName}`;
+    }
+
+    // Fallback to user type and ID if name not available
+    return `Welcome, ${user.userType === "patient" ? "Patient" : "Clinician"} ${user.userId}`;
   };
 
   return (
     <div style={styles.container}>
       <section style={styles.hero}>
-        <h1 style={styles.heroTitle}>Welcome to Healthbridge Solutions</h1>
+        <h1 style={styles.heroTitle}>{getWelcomeMessage()}</h1>
         <p style={styles.heroSubtitle}>Your GFR calculation resource</p>
         <button style={styles.heroButton} onClick={handleGetStartedClick}>
-          Get Started
+          {user.isAuthenticated ? "Use Calculator" : "Get Started"}
         </button>
       </section>
       <section style={styles.section}>
