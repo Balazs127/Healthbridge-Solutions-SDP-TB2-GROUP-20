@@ -1,11 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Link,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { Route, Routes, Link, Navigate, useLocation } from "react-router-dom";
 import Home from "./views/Home";
 import Calculator from "./views/Calculator";
 import CalculationData from "./views/CalculationData";
@@ -114,11 +107,9 @@ ProtectedRoute.propTypes = {
 
 function App() {
   return (
-    <Router>
-      <UserProvider>
-        <AppContent />
-      </UserProvider>
-    </Router>
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
   );
 }
 
