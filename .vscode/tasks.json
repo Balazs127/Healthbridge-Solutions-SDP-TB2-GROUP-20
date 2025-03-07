@@ -6,7 +6,7 @@
       "type": "shell",
       "command": "node server.js",
       "options": {
-        "cwd": "healthbridge solutions/backend"
+        "cwd": "backend"
       },
       "problemMatcher": []
     },
@@ -15,7 +15,7 @@
       "type": "shell",
       "command": "npm run dev",
       "options": {
-        "cwd": "healthbridge solutions/"
+        "cwd": "."
       },
       "problemMatcher": []
     },
