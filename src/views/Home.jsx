@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { get } from "../api/api";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -13,12 +13,9 @@ const Home = () => {
 
     // Determine the API endpoint based on user type
     const endpoint =
-      user.userType === "patient"
-        ? `http://localhost:5000/api/patientlogin/${user.userId}`
-        : `http://localhost:5000/api/clinicianlogin/${user.userId}`;
+      user.userType === "patient" ? `patientlogin/${user.userId}` : `clinicianlogin/${user.userId}`;
 
-    axios
-      .get(endpoint)
+    get(endpoint)
       .then((response) => {
         setUserData(response.data);
       })

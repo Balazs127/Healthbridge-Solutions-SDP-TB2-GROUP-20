@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import GFRCalculator from "../components/GFRCalculator";
 import GFRGraph from "../components/GFRGraph";
 import { useUser } from "../hooks/useUser";
-import axios from "axios";
+import { fetchCalculations } from "../api/api";
 
 const Calculator = () => {
   const { user } = useUser();
@@ -16,19 +16,14 @@ const Calculator = () => {
       return;
     }
 
-    const apiUrl = `http://localhost:5000/api/egfr_calculations?field=PatientID&value=${user.userId}`;
-
-    axios
-      .get(apiUrl)
-      .then((response) => {
-        setCalculationHistory(response.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching calculation history:", err);
-        setError("Failed to load calculation history");
-        setLoading(false);
-      });
+    fetchCalculations(
+      "PatientID",
+      user.userId,
+      setCalculationHistory,
+      setLoading,
+      setError,
+      "Failed to load calculation history"
+    );
   }, [user.isAuthenticated, user.userId, user.userType]);
 
   const handleNewCalculation = (newCalculation) => {

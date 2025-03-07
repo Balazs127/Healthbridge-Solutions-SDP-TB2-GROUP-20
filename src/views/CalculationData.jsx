@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useUser } from "../hooks/useUser";
-import axios from "axios";
+import { fetchCalculations } from "../api/api";
 
 const CalculationData = () => {
   const { user } = useUser();
@@ -11,28 +11,10 @@ const CalculationData = () => {
   useEffect(() => {
     if (!user.isAuthenticated) return;
 
-    let apiUrl;
+    // Different field parameters based on user type
+    const field = user.userType === "patient" ? "PatientID" : "ClinicianID";
 
-    // Different API endpoints based on user type
-    if (user.userType === "patient") {
-      // For patients, show their own data
-      apiUrl = `http://localhost:5000/api/egfr_calculations?field=PatientID&value=${user.userId}`;
-    } else if (user.userType === "clinician") {
-      // For clinicians, show data for patients they're responsible for
-      apiUrl = `http://localhost:5000/api/egfr_calculations?field=ClinicianID&value=${user.userId}`;
-    }
-
-    axios
-      .get(apiUrl)
-      .then((response) => {
-        setMongoData(response.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching data:", err);
-        setError("Failed to load data");
-        setLoading(false);
-      });
+    fetchCalculations(field, user.userId, setMongoData, setLoading, setError);
   }, [user.isAuthenticated, user.userId, user.userType]);
 
   return (

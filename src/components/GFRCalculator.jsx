@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { useUser } from "../hooks/useUser";
-import axios from "axios";
+import { post } from "../api/api";
 
 export default function GFRCalculator({ onCalculationComplete }) {
   const { user } = useUser();
@@ -107,10 +107,7 @@ export default function GFRCalculator({ onCalculationComplete }) {
 
     if (user.isAuthenticated && onCalculationComplete) {
       try {
-        const response = await axios.post(
-          "http://localhost:5000/api/egfr_calculations",
-          dbCalculationData
-        );
+        const response = await post("egfr_calculations", dbCalculationData);
 
         if (response.data) {
           const resultData = {

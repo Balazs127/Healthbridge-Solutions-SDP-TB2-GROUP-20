@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useUser } from "../hooks/useUser";
+import { get, fetchCalculations } from "../api/api";
 
 const Profile = () => {
   const { user } = useUser();
@@ -16,12 +16,9 @@ const Profile = () => {
 
     // Determine the API endpoint based on user type
     const endpoint =
-      user.userType === "patient"
-        ? `http://localhost:5000/api/patientlogin/${user.userId}`
-        : `http://localhost:5000/api/clinicianlogin/${user.userId}`;
+      user.userType === "patient" ? `patientlogin/${user.userId}` : `clinicianlogin/${user.userId}`;
 
-    axios
-      .get(endpoint)
+    get(endpoint)
       .then((response) => {
         setUserData(response.data);
         setLoading(false);
@@ -37,27 +34,22 @@ const Profile = () => {
   useEffect(() => {
     if (!user.isAuthenticated || user.userType !== "patient") return;
 
-    axios
-      .get(`http://localhost:5000/api/egfr_calculations?field=PatientID&value=${user.userId}`)
-      .then((response) => {
-        setCalculations(response.data);
+    fetchCalculations("PatientID", user.userId, (data) => {
+      setCalculations(data);
 
-        if (response.data.length > 0) {
-          const sorted = response.data.sort(
-            (a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt)
-          );
-          const mostRecent = new Date(sorted[0].CreatedAt);
-          const now = new Date();
-          const diffInDays = (now - mostRecent) / (1000 * 60 * 60 * 24);
+      if (data.length > 0) {
+        const sorted = data.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
+        const mostRecent = new Date(sorted[0].CreatedAt);
+        const now = new Date();
+        const diffInDays = (now - mostRecent) / (1000 * 60 * 60 * 24);
 
-          if (diffInDays > 90) {
-            setAlertNeeded(true);
-          }
+        if (diffInDays > 90) {
+          setAlertNeeded(true);
         }
-      })
-      .catch((err) => {
-        console.error("Error fetching calculations:", err);
-      });
+      }
+    }).catch((err) => {
+      console.error("Error in checking eGFR calculations:", err);
+    });
   }, [user.isAuthenticated, user.userId, user.userType]);
 
   if (loading) {
