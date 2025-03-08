@@ -9,12 +9,16 @@ const createCrudRoutes = (client, dbName, collectionName) => {
   // GET all documents
   router.get("/", async (req, res) => {
     try {
-      const { field, value } = req.query;
+      const { field, value, ...otherParams } = req.query;
       const query = {};
 
       if (field && value) {
         query[field] = value;
       }
+      
+      Object.keys(otherParams).forEach(key => {
+        query[key] = otherParams[key];
+      });
 
       const data = await collection.find(query).toArray();
       res.status(200).json(data);
