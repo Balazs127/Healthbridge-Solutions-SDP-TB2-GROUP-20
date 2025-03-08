@@ -2,6 +2,7 @@ import { Route, Routes, Link, Navigate, useLocation } from "react-router-dom";
 import Home from "./views/Home";
 import Calculator from "./views/Calculator";
 import CalculationData from "./views/CalculationData";
+import PatientList from "./views/PatientList";
 import Profile from "./views/Profile";
 import Login from "./views/Login";
 import { UserProvider } from "./contexts/UserProvider";
@@ -53,7 +54,11 @@ function AppContent() {
   const navLinks = [
     { to: "/", label: "Home", protected: false },
     { to: "/calculator", label: "GFR Calculator", protected: false },
-    { to: "/calculationData", label: "Calculation Data", protected: true },
+    { 
+      to: user.userType === "clinician" ? "/patientList" : "/calculationData", 
+      label: user.userType === "clinician" ? "Patient View" : "Calculation Data", 
+      protected: true 
+    },
     { to: "/profile", label: "Profile", protected: true },
   ];
 
@@ -158,7 +163,22 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-        
+          <Route
+            path="/patientList"
+            element={
+              <ProtectedRoute>
+                <PatientList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/patientData/:patientId"
+            element={
+              <ProtectedRoute>
+                <CalculationData isClinicianView={true} />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/login" element={<Login />} />
         </Routes>
       </main>

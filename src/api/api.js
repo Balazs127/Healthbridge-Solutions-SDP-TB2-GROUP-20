@@ -22,6 +22,31 @@ const patch = (endpoint, data = {}) => {
   return axios.patch(`${API_BASE_URL}/${endpoint}`, data);
 };
 
+const handleApiResponse = (
+  promise,
+  setData = null,
+  setLoading = null,
+  setError = null,
+  errorMessage = "API request failed",
+  logLabel = "API data"
+) => {
+  if (setLoading) setLoading(true);
+  
+  return promise
+    .then((response) => {
+      console.log(`${logLabel} response:`, response.data);
+      if (setData) setData(response.data);
+      if (setLoading) setLoading(false);
+      return response;
+    })
+    .catch((err) => {
+      console.error(`Error: ${logLabel}:`, err);
+      if (setError) setError(errorMessage);
+      if (setLoading) setLoading(false);
+      throw err;
+    });
+};
+
 const fetchCalculations = (
   field,
   value,
@@ -30,45 +55,86 @@ const fetchCalculations = (
   setError,
   errorMessage = "Failed to load data"
 ) => {
-  return get("egfr_calculations", { field, value })
-    .then((response) => {
-      setData(response.data);
-      setLoading(false);
-      return response; // Return response for chaining
-    })
-    .catch((err) => {
-      console.error("Error fetching data:", err);
-      setError(errorMessage);
-      setLoading(false);
-      throw err; // Re-throw for further handling if needed
-    });
+  console.log(`Fetching calculations with ${field}=${value}`);
+  
+  if (!value) {
+    console.error("Missing value for fetch calculations");
+    setError("Missing patient ID");
+    setLoading(false);
+    return Promise.reject("Missing value");
+  }
+  
+  return handleApiResponse(
+    get("egfr_calculations", { field, value }),
+    setData,
+    setLoading,
+    setError,
+    errorMessage,
+    "Calculations"
+  );
 };
 
 const fetchUserData = (user, setUserData, setLoading = null, setError = null) => {
   if (!user || !user.isAuthenticated) return Promise.resolve(null);
   
-  if (setLoading) setLoading(true);
-  
   const endpoint = user.userType === "patient" 
     ? `patientlogin/${user.userId}` 
     : `clinicianlogin/${user.userId}`;
 
-  return get(endpoint)
-    .then((response) => {
-      if (setUserData) {
-        setUserData(response.data);
-      }
-      if (setLoading) setLoading(false);
-      return response.data;
-    })
-    .catch((err) => {
-      console.error(`Error fetching ${user.userType} data:`, err);
-      if (setError) {
-        setError(`Failed to load ${user.userType} data`);
-      }
-      if (setLoading) setLoading(false);
-      throw err;
-    });
+  return handleApiResponse(
+    get(endpoint),
+    setUserData,
+    setLoading,
+    setError,
+    `Failed to load ${user.userType} data`,
+    `${user.userType} data`
+  );
 };
 
-export { API_BASE_URL, get, post, put, del as delete, patch, fetchCalculations, fetchUserData };
+const fetchPatientsByClinicianId = (
+  clinicianId,
+  setData,
+  setLoading,
+  setError,
+  errorMessage = "Failed to load patients"
+) => {
+  return handleApiResponse(
+    get("patientlogin", { field: "ClinicianID", value: clinicianId }),
+    setData,
+    setLoading,
+    setError,
+    errorMessage,
+    "Patients list"
+  );
+};
+
+const fetchPatientById = (
+  patientId,
+  setData,
+  setLoading,
+  setError,
+  errorMessage = "Failed to load patient details"
+) => {
+  return handleApiResponse(
+    get(`patientlogin/${patientId}`),
+    setData,
+    setLoading,
+    setError,
+    errorMessage,
+    "Patient details"
+  );
+};
+
+export { 
+  API_BASE_URL, 
+  get, 
+  post, 
+  put, 
+  del as delete, 
+  patch, 
+  fetchCalculations, 
+  fetchUserData,
+  fetchPatientsByClinicianId,
+  fetchPatientById,
+  handleApiResponse 
+};
