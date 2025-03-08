@@ -12,6 +12,7 @@ export default function GFRCalculator({ onCalculationComplete }) {
   const [creatinineUnit, setCreatinineUnit] = useState("mg/dL");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
+  const [clinianID, setClinicianID] = useState("");
   const [ethnicity, setEthnicity] = useState("");
   const [egfr, setEGFR] = useState("");
   const [ckdStage, setCKDStage] = useState("");
@@ -64,6 +65,11 @@ export default function GFRCalculator({ onCalculationComplete }) {
             // Set ethnicity if available
             if (data.Ethnicity) {
               setEthnicity(mapEthnicity(data.Ethnicity));
+            }
+
+            // Set clinician if available
+            if (data.ClinicianID) {
+              setClinicianID(data.ClinicianID);
             }
           }
         })
@@ -148,7 +154,7 @@ export default function GFRCalculator({ onCalculationComplete }) {
 
     const dbCalculationData = {
       PatientID: user.userType === "patient" ? user.userId : "",
-      ClinicianID: user.userType === "clinician" ? user.userId : "",
+      ClinicianID: user.userType === "clinician" ? user.userId : clinianID,
       Age: ageValue,
       Gender: gender,
       Ethnicity: ethnicity,

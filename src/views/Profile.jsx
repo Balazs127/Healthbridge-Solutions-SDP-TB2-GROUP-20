@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useUser } from "../hooks/useUser";
 import { fetchUserData, fetchCalculations } from "../api/api";
-import { colors, typography, spacing, components } from "../theme";
+import ProfileStyles from "../styles/Profile.styles";
+import ProfileCard from "../components/profile/ProfileCard";
+import AlertBanner from "../components/profile/AlertBanner";
 
 const Profile = () => {
   const { user } = useUser();
@@ -40,113 +42,48 @@ const Profile = () => {
     });
   }, [user.isAuthenticated, user.userId, user.userType]);
 
+  // Update userData when changes are made
+  const updateUserData = (newData) => {
+    setUserData(newData);
+  };
+
   if (loading) {
     return (
-      <div style={styles.container}>
-        <h2 style={styles.title}>Profile</h2>
-        <p style={styles.text}>Loading...</p>
+      <div style={ProfileStyles.container}>
+        <h2 style={ProfileStyles.title}>Profile</h2>
+        <p style={ProfileStyles.text}>Loading...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={styles.container}>
-        <h2 style={styles.title}>Profile</h2>
-        <p style={styles.text}>{error}</p>
+      <div style={ProfileStyles.container}>
+        <h2 style={ProfileStyles.title}>Profile</h2>
+        <p style={ProfileStyles.text}>{error}</p>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>
+    <div style={ProfileStyles.container}>
+      <h2 style={ProfileStyles.title}>
         {user.userType === "patient" ? "Patient Profile" : "Clinician Profile"}
       </h2>
 
       {/* Alert for patients with old eGFR calculation */}
       {user.userType === "patient" && alertNeeded && (
-        <div style={styles.alert}>
-          Your most recent eGFR calculation is older than 3 months. Please check in.
-        </div>
+        <AlertBanner message="Your most recent eGFR calculation is older than 3 months. Please check in." />
       )}
 
-      <div style={styles.profileCard}>
-        <div style={styles.profileField}>
-          <span style={styles.fieldLabel}>
-            {user.userType === "patient" ? "Patient ID:" : "Clinician ID:"}
-          </span>
-          <span style={styles.fieldValue}>{userData?._id}</span>
-        </div>
-
-        <div style={styles.profileField}>
-          <span style={styles.fieldLabel}>First Name:</span>
-          <span style={styles.fieldValue}>{userData?.FirstName}</span>
-        </div>
-
-        <div style={styles.profileField}>
-          <span style={styles.fieldLabel}>Last Name:</span>
-          <span style={styles.fieldValue}>{userData?.LastName}</span>
-        </div>
-
-        <div style={styles.profileField}>
-          <span style={styles.fieldLabel}>Email:</span>
-          <span style={styles.fieldValue}>{userData?.Email}</span>
-        </div>
-
-        <div style={styles.profileField}>
-          <span style={styles.fieldLabel}>Phone Number:</span>
-          <span style={styles.fieldValue}>{userData?.PhoneNumber}</span>
-        </div>
-      </div>
+      <ProfileCard 
+        userData={userData}
+        userType={user.userType}
+        userId={user.userId}
+        updateUserData={updateUserData}
+      />
     </div>
   );
 };
 
 export default Profile;
-
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: spacing.lg,
-  },
-  title: {
-    fontSize: typography.fontSize.h2,
-    marginBottom: spacing.sm,
-    color: colors.primary.midnightBlue,
-  },
-  text: {
-    fontSize: typography.fontSize.body,
-    marginBottom: spacing.xs,
-  },
-  alert: {
-    ...components.alert.warning,
-    width: "100%",
-    maxWidth: "500px",
-    textAlign: "center",
-    marginBottom: spacing.sm,
-    padding: spacing.sm,
-    fontWeight: typography.fontWeight.bold,
-  },
-  profileCard: {
-    ...components.card,
-    width: "100%",
-    maxWidth: "500px",
-  },
-  profileField: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: `${spacing.xs} 0`,
-    borderBottom: `1px solid ${colors.neutral.lightGray}`,
-  },
-  fieldLabel: {
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral.mediumGray,
-  },
-  fieldValue: {
-    color: colors.neutral.darkGray,
-  },
-};
