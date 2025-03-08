@@ -1,29 +1,22 @@
 import { useEffect, useState } from "react";
 import { useUser } from "../hooks/useUser";
-import { fetchUserData, fetchCalculations } from "../api/api";
+import { fetchCalculations } from "../api/api";
 import ProfileStyles from "../styles/Profile.styles";
 import ProfileCard from "../components/profile/ProfileCard";
 import AlertBanner from "../components/profile/AlertBanner";
 
 const Profile = () => {
-  const { user } = useUser();
-  const [userData, setUserData] = useState(null);
+  const { user, userData, loading: userLoading, error: userError, updateUserData } = useUser();
   const [calculations, setCalculations] = useState([]);
   const [alertNeeded, setAlertNeeded] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // Fetch user data based on user type
-  useEffect(() => {
-    if (!user.isAuthenticated) return;
-    
-    fetchUserData(user, setUserData, setLoading, setError);
-  }, [user.isAuthenticated, user.userId, user.userType]);
+  const [calculationsLoading, setCalculationsLoading] = useState(false);
+  const [calculationsError, setCalculationsError] = useState("");
 
   // Only check eGFR calculations for patients
   useEffect(() => {
     if (!user.isAuthenticated || user.userType !== "patient") return;
-
+    
+    setCalculationsLoading(true);
     fetchCalculations("PatientID", user.userId, (data) => {
       setCalculations(data);
 
@@ -37,30 +30,34 @@ const Profile = () => {
           setAlertNeeded(true);
         }
       }
-    }).catch((err) => {
+      setCalculationsLoading(false);
+    }, setCalculationsLoading, setCalculationsError, "Failed to load calculations").catch((err) => {
       console.error("Error in checking eGFR calculations:", err);
+      setCalculationsLoading(false);
     });
   }, [user.isAuthenticated, user.userId, user.userType]);
 
-  // Update userData when changes are made
-  const updateUserData = (newData) => {
-    setUserData(newData);
+  // Handle userData updates
+  const handleUserDataUpdate = (newData) => {
+    updateUserData(newData);
   };
 
-  if (loading) {
+  // Show main loading state only when user data is loading
+  if (userLoading) {
     return (
       <div style={ProfileStyles.container}>
         <h2 style={ProfileStyles.title}>Profile</h2>
-        <p style={ProfileStyles.text}>Loading...</p>
+        <p style={ProfileStyles.text}>Loading profile data...</p>
       </div>
     );
   }
 
-  if (error) {
+  // Show error if user data failed to load
+  if (userError) {
     return (
       <div style={ProfileStyles.container}>
         <h2 style={ProfileStyles.title}>Profile</h2>
-        <p style={ProfileStyles.text}>{error}</p>
+        <p style={ProfileStyles.text}>{userError}</p>
       </div>
     );
   }
@@ -71,17 +68,26 @@ const Profile = () => {
         {user.userType === "patient" ? "Patient Profile" : "Clinician Profile"}
       </h2>
 
-      {/* Alert for patients with old eGFR calculation */}
-      {user.userType === "patient" && alertNeeded && (
+      {/* Show alert banner only when calculations have loaded and alert is needed */}
+      {user.userType === "patient" && !calculationsLoading && alertNeeded && (
         <AlertBanner message="Your most recent eGFR calculation is older than 3 months. Please check in." />
       )}
+      
+      {/* Show calculations error if any */}
+      {calculationsError && (
+        <p style={ProfileStyles.errorText}>{calculationsError}</p>
+      )}
 
-      <ProfileCard 
-        userData={userData}
-        userType={user.userType}
-        userId={user.userId}
-        updateUserData={updateUserData}
-      />
+      {/* Always render the profile card once userData is available */}
+      {userData && (
+        <ProfileCard 
+          userData={userData}
+          userType={user.userType}
+          userId={user.userId}
+          updateUserData={handleUserDataUpdate}
+          isCalculationsLoading={calculationsLoading}
+        />
+      )}
     </div>
   );
 };

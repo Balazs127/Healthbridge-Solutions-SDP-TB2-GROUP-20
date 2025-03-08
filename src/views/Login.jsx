@@ -5,22 +5,30 @@ import { colors, typography, spacing, components } from "../theme";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login, loading, error: loginError } = useUser();
   const [userId, setUserId] = useState("");
   const [error, setError] = useState("");
 
-  const handlePatientLogin = () => {
+  const handlePatientLogin = async () => {
     // Use default ID if empty
     const patientId = userId.trim() || "2000000003";
-    login("patient", patientId);
-    navigate("/home");
+    try {
+      await login("patient", patientId);
+      navigate("/home");
+    } catch (err) {
+      setError("Failed to login. Please try again.");
+    }
   };
 
-  const handleClinicianLogin = () => {
+  const handleClinicianLogin = async () => {
     // Use default ID if empty
     const clinicianId = userId.trim() || "H123456788";
-    login("clinician", clinicianId);
-    navigate("/home");
+    try {
+      await login("clinician", clinicianId);
+      navigate("/home");
+    } catch (err) {
+      setError("Failed to login. Please try again.");
+    }
   };
 
   return (
@@ -41,14 +49,24 @@ const Login = () => {
         />
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {(error || loginError) && (
+        <p style={styles.error}>{error || loginError}</p>
+      )}
 
       <div style={styles.buttonContainer}>
-        <button style={styles.button} onClick={handlePatientLogin}>
-          Login as Patient
+        <button 
+          style={styles.button} 
+          onClick={handlePatientLogin}
+          disabled={loading}
+        >
+          {loading ? "Logging in..." : "Login as Patient"}
         </button>
-        <button style={styles.button} onClick={handleClinicianLogin}>
-          Login as Clinician
+        <button 
+          style={styles.button} 
+          onClick={handleClinicianLogin}
+          disabled={loading}
+        >
+          {loading ? "Logging in..." : "Login as Clinician"}
         </button>
       </div>
 

@@ -1,22 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
-import { useState, useEffect } from "react";
-import { fetchUserData } from "../api/api";
 import { colors, typography, spacing, components } from "../theme";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { user } = useUser();
-  const [userData, setUserData] = useState(null);
-
-  useEffect(() => {
-    if (!user.isAuthenticated) return;
-    
-    fetchUserData(user, setUserData)
-      .catch((err) => {
-        console.error(`Error in Home: ${err}`);
-      });
-  }, [user.isAuthenticated, user.userId, user.userType]);
+  const { user, userData } = useUser();
 
   const handleGetStartedClick = () => {
     if (!user.isAuthenticated) {

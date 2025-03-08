@@ -11,9 +11,11 @@ const ClinicianSelection = ({ userId, userData, updateUserData }) => {
   const [clinicianUpdateSuccess, setClinicianUpdateSuccess] = useState(false);
   const [isEditingClinician, setIsEditingClinician] = useState(false);
   const [currentClinician, setCurrentClinician] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch available clinicians
   useEffect(() => {
+    setLoading(true);
     get("clinicianlogin")
       .then(response => {
         setClinicians(response.data);
@@ -28,9 +30,11 @@ const ClinicianSelection = ({ userId, userData, updateUserData }) => {
             setCurrentClinician(assignedClinician);
           }
         }
+        setLoading(false);
       })
       .catch(err => {
         console.error("Error fetching clinicians:", err);
+        setLoading(false);
       });
   }, [userData]);
 
@@ -92,11 +96,18 @@ const ClinicianSelection = ({ userId, userData, updateUserData }) => {
       <ProfileField label="Clinician:">
         <div style={styles.clinicianContainer}>
           <span style={styles.fieldValue}>
-            {currentClinician ? `Dr. ${currentClinician.FirstName} ${currentClinician.LastName}` : 'Not assigned'}
+            {loading ? (
+              <span style={styles.loadingText}>Loading clinician info...</span>
+            ) : currentClinician ? (
+              `Dr. ${currentClinician.FirstName} ${currentClinician.LastName}`
+            ) : (
+              'Not assigned'
+            )}
           </span>
           <button 
             onClick={toggleEditClinician} 
             style={styles.editButton}
+            disabled={loading}
           >
             {isEditingClinician ? "Cancel" : "Edit"}
           </button>
@@ -221,6 +232,11 @@ const styles = {
   },
   fieldValue: {
     color: colors.neutral.darkGray,
+  },
+  loadingText: {
+    color: colors.neutral.mediumGray,
+    fontSize: typography.fontSize.small,
+    fontStyle: 'italic',
   },
 };
 
