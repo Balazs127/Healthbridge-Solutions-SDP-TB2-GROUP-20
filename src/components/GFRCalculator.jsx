@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useUser } from "../hooks/useUser";
-import { post } from "../api/api";
+import { post, fetchUserData } from "../api/api";
 import { colors, typography, spacing, components } from "../theme";
 import "../styles/calculatorStyles.css"; // Import the CSS file
 
 export default function GFRCalculator({ onCalculationComplete }) {
   const { user } = useUser();
+  const [userData, setUserData] = useState(null);
   const [creatinine, setCreatinine] = useState("");
   const [creatinineUnit, setCreatinineUnit] = useState("mg/dL");
   const [age, setAge] = useState("");
@@ -16,6 +17,61 @@ export default function GFRCalculator({ onCalculationComplete }) {
   const [ckdStage, setCKDStage] = useState("");
   const [pediatricMessage, setPediatricMessage] = useState("");
   const [calculating, setCalculating] = useState(false);
+
+  // Map ethnicity values from database to dropdown options
+  const mapEthnicity = (dbEthnicity) => {
+    if (!dbEthnicity) return "";
+    
+    const ethnicityMap = {
+      "black": "black",
+      "white": "white",
+      "asian": "asian",
+      "hispanic": "hispanic",
+      "caucasian": "caucasian",
+      "indian": "indian",
+      "latino": "latino",
+      "other": "other"
+    };
+    
+    return ethnicityMap[dbEthnicity.toLowerCase()] || "other";
+  };
+
+  // Fetch user data and populate form fields
+  useEffect(() => {
+    if (user && user.isAuthenticated && user.userType === "patient") {
+      fetchUserData(user, setUserData)
+        .then((data) => {
+          if (data) {
+            // Calculate age from DOB if available
+            if (data.DOB) {
+              const dob = new Date(data.DOB);
+              const today = new Date();
+              let calculatedAge = today.getFullYear() - dob.getFullYear();
+              const monthDiff = today.getMonth() - dob.getMonth();
+              
+              if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                calculatedAge--;
+              }
+              
+              setAge(calculatedAge.toString());
+            }
+            
+            // Set gender if available
+            if (data.Gender) {
+              setGender(data.Gender.toLowerCase());
+            }
+            
+            // Set ethnicity if available
+            if (data.Ethnicity) {
+              setEthnicity(mapEthnicity(data.Ethnicity));
+            }
+          }
+        })
+        .catch(error => {
+          console.error("Error loading user data for GFR calculator:", error);
+        });
+    }
+  }, [user]);
 
   const determineCKDStage = (egfrValue) => {
     if (egfrValue >= 90) return "G1";
@@ -209,6 +265,9 @@ export default function GFRCalculator({ onCalculationComplete }) {
           <option value="black">Black</option>
           <option value="white">White</option>
           <option value="asian">Asian</option>
+          <option value="hispanic">Hispanic</option>
+          <option value="caucasian">Caucasian</option>
+          <option value="latino">Latino</option>
           <option value="indian">Indian</option>
           <option value="other">Other</option>
         </select>

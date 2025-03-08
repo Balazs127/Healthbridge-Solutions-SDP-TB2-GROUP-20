@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
 import { useState, useEffect } from "react";
-import { get } from "../api/api";
+import { fetchUserData } from "../api/api";
 import { colors, typography, spacing, components } from "../theme";
 
 const Home = () => {
@@ -11,17 +11,10 @@ const Home = () => {
 
   useEffect(() => {
     if (!user.isAuthenticated) return;
-
-    // Determine the API endpoint based on user type
-    const endpoint =
-      user.userType === "patient" ? `patientlogin/${user.userId}` : `clinicianlogin/${user.userId}`;
-
-    get(endpoint)
-      .then((response) => {
-        setUserData(response.data);
-      })
+    
+    fetchUserData(user, setUserData)
       .catch((err) => {
-        console.error(`Error fetching ${user.userType} data:`, err);
+        console.error(`Error in Home: ${err}`);
       });
   }, [user.isAuthenticated, user.userId, user.userType]);
 

@@ -44,4 +44,31 @@ const fetchCalculations = (
     });
 };
 
-export { API_BASE_URL, get, post, put, del as delete, patch, fetchCalculations };
+const fetchUserData = (user, setUserData, setLoading = null, setError = null) => {
+  if (!user || !user.isAuthenticated) return Promise.resolve(null);
+  
+  if (setLoading) setLoading(true);
+  
+  const endpoint = user.userType === "patient" 
+    ? `patientlogin/${user.userId}` 
+    : `clinicianlogin/${user.userId}`;
+
+  return get(endpoint)
+    .then((response) => {
+      if (setUserData) {
+        setUserData(response.data);
+      }
+      if (setLoading) setLoading(false);
+      return response.data;
+    })
+    .catch((err) => {
+      console.error(`Error fetching ${user.userType} data:`, err);
+      if (setError) {
+        setError(`Failed to load ${user.userType} data`);
+      }
+      if (setLoading) setLoading(false);
+      throw err;
+    });
+};
+
+export { API_BASE_URL, get, post, put, del as delete, patch, fetchCalculations, fetchUserData };

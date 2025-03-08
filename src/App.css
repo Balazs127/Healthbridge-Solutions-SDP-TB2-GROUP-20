@@ -126,6 +126,81 @@ footer {
   background-color: #1665C1; /* colors.buttons.primaryHover */
 }
 
+/* Hamburger menu styles */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  display: none;
+}
+
+.mobile-menu-active .menu-overlay {
+  display: block;
+}
+
+.mobile-menu {
+  transform: translateY(0);
+  transition: transform 0.3s ease-in-out;
+}
+
+.mobile-menu.hidden {
+  transform: translateY(-100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+  .navList {
+    display: none !important;
+  }
+  
+  header {
+    position: relative;
+  }
+  
+  .hamburger {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 1101px) {
+  .hamburger {
+    display: none !important;
+  }
+  
+  .mobile-menu {
+    display: none !important;
+  }
+}
+
+/* Animation for hamburger menu */
+.hamburger-line {
+  transition: all 0.3s ease;
+}
+
+.hamburger.active .hamburger-line:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active .hamburger-line:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Focus styles for accessibility */
+.mobile-nav-link:focus,
+.mobile-logout-button:focus,
+.hamburger:focus {
+  outline: 0.125rem solid var(--neutral-white);
+  outline-offset: 0.125rem;
+}
+
 @media (max-width: 768px) {
   main {
     padding: 16px; /* spacing.sm */

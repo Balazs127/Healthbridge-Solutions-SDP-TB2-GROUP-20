@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "../hooks/useUser";
-import { get, fetchCalculations } from "../api/api";
+import { fetchUserData, fetchCalculations } from "../api/api";
 import { colors, typography, spacing, components } from "../theme";
 
 const Profile = () => {
@@ -14,21 +14,8 @@ const Profile = () => {
   // Fetch user data based on user type
   useEffect(() => {
     if (!user.isAuthenticated) return;
-
-    // Determine the API endpoint based on user type
-    const endpoint =
-      user.userType === "patient" ? `patientlogin/${user.userId}` : `clinicianlogin/${user.userId}`;
-
-    get(endpoint)
-      .then((response) => {
-        setUserData(response.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(`Error fetching ${user.userType} data:`, err);
-        setError(`Failed to load ${user.userType} data`);
-        setLoading(false);
-      });
+    
+    fetchUserData(user, setUserData, setLoading, setError);
   }, [user.isAuthenticated, user.userId, user.userType]);
 
   // Only check eGFR calculations for patients
