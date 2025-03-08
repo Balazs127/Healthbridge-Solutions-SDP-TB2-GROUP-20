@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "../hooks/useUser";
 import { fetchCalculations } from "../api/api";
+import { colors, typography, spacing, components } from "../theme";
 
 const CalculationData = () => {
   const { user } = useUser();
@@ -81,33 +82,37 @@ export default CalculationData;
 
 const styles = {
   section: {
-    marginBottom: "2rem",
-    padding: "1rem",
+    marginBottom: spacing.lg,
+    padding: spacing.sm,
   },
   h2: {
-    marginTop: "2rem",
-    color: "#2c3e50",
+    fontSize: typography.fontSize.h2,
+    fontWeight: typography.fontWeight.semiBold,
+    marginTop: spacing.lg,
+    color: colors.primary.midnightBlue,
   },
   recordCount: {
-    marginBottom: "1rem",
-    fontSize: "1.1rem",
-    color: "#666",
+    marginBottom: spacing.sm,
+    fontSize: typography.fontSize.body,
+    color: colors.neutral.mediumGray,
   },
   dataList: {
     listStyle: "none",
     padding: 0,
   },
   dataItem: {
-    backgroundColor: "#f8f9fa",
-    padding: "1.5rem",
-    margin: "1rem 0",
-    borderRadius: "8px",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    border: "1px solid #e9ecef",
+    backgroundColor: colors.neutral.white,
+    padding: spacing.md,
+    margin: `${spacing.sm} 0`,
+    borderRadius: "0.5rem", // 8px
+    boxShadow: "0 0.125rem 0.25rem rgba(0,0,0,0.1)", // 0 2px 4px
+    border: `0.0625rem solid ${colors.neutral.lightGray}`, // 1px
   },
   patientInfo: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "1rem",
+    gridTemplateColumns: "repeat(auto-fit, minmax(12.5rem, 1fr))", // 200px
+    gap: spacing.sm,
+    color: colors.neutral.darkGray,
+    fontSize: typography.fontSize.body,
   },
 };

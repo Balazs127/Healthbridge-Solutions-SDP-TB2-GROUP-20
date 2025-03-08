@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
+import { colors, typography, spacing, components } from "../theme";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -66,53 +67,45 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
-    height: "100vh",
-    backgroundColor: "#f4f4f4",
+    paddingTop: spacing.xxl,
+    backgroundColor: colors.neutral.lightGray,
   },
   title: {
-    fontSize: "2rem",
-    marginBottom: "2rem",
+    fontSize: typography.fontSize.h1,
+    fontWeight: typography.fontWeight.semiBold,
+    marginBottom: spacing.lg,
+    color: colors.primary.midnightBlue,
   },
   inputGroup: {
-    marginBottom: "1.5rem",
-    width: "300px",
+    marginBottom: spacing.md,
+    width: "18.75rem", // 300px
   },
   label: {
-    display: "block",
-    marginBottom: "0.5rem",
-    fontWeight: "bold",
+    ...components.forms.label,
   },
   input: {
+    ...components.forms.input,
     width: "100%",
-    padding: "0.75rem",
-    fontSize: "1rem",
-    borderRadius: "4px",
-    border: "1px solid #ddd",
   },
   buttonContainer: {
     display: "flex",
     flexDirection: "column",
-    width: "300px",
+    width: "18.75rem", // 300px
   },
   button: {
-    padding: "1rem 2rem",
-    fontSize: "1rem",
-    color: "white",
-    backgroundColor: "#4CAF50",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    marginBottom: "1rem",
+    ...components.buttons.primary,
+    marginBottom: spacing.sm,
     width: "100%",
   },
   error: {
-    color: "red",
-    marginBottom: "1rem",
+    color: colors.semantic.error,
+    marginBottom: spacing.sm,
+    fontSize: typography.fontSize.small,
   },
   defaultIds: {
-    marginTop: "2rem",
+    marginTop: spacing.lg,
     textAlign: "center",
-    color: "#666",
+    color: colors.neutral.mediumGray,
+    fontSize: typography.fontSize.small,
   },
 };

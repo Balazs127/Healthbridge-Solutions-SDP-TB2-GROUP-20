@@ -3,6 +3,7 @@ import GFRCalculator from "../components/GFRCalculator";
 import GFRGraph from "../components/GFRGraph";
 import { useUser } from "../hooks/useUser";
 import { fetchCalculations } from "../api/api";
+import { colors, typography, spacing } from "../theme";
 
 const Calculator = () => {
   const { user } = useUser();
@@ -86,21 +87,23 @@ export default Calculator;
 
 const styles = {
   section: {
-    marginBottom: "2rem",
+    marginBottom: spacing.lg,
   },
   graphSection: {
-    marginTop: "2rem",
-    borderTop: "1px solid #e0e0e0",
-    paddingTop: "1.5rem",
+    marginTop: spacing.lg,
+    borderTop: `1px solid ${colors.neutral.lightGray}`,
+    paddingTop: spacing.md,
   },
   loadingText: {
     textAlign: "center",
-    color: "#666",
-    padding: "1rem",
+    color: colors.neutral.mediumGray,
+    padding: spacing.sm,
+    fontSize: typography.fontSize.body,
   },
   errorText: {
     textAlign: "center",
-    color: "#dc3545",
-    padding: "1rem",
+    color: colors.semantic.error,
+    padding: spacing.sm,
+    fontSize: typography.fontSize.body,
   },
 };

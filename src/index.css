@@ -1,11 +1,16 @@
+/* Base styles aligned with Healthbridge Solutions theme */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Base font size - all rem calculations will be based on this */
+  font-size: 16px;
+  
+  font-family: 'Open Sans', 'Roboto', Arial, Helvetica, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Use light theme by default */
+  color-scheme: light;
+  color: #3D3D3D; /* neutral.darkGray */
+  background-color: #F3F3F3; /* neutral.lightGray */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,56 +18,83 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global link styles */
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  color: #1A73E8; /* primary.blue */
+  text-decoration: none;
 }
 
+a:hover {
+  color: #1665C1; /* buttons.primaryHover */
+}
+
+/* Reset body styles to prevent conflicts */
 body {
   margin: 0;
+  padding: 0;
+  min-width: 20rem; /* 320px */
+  min-height: 100vh;
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  flex-direction: column;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
 
+/* Heading styles */
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 2rem; /* 32px */
+  font-weight: 600; /* typography.fontWeight.semiBold */
+  line-height: 1.3; /* typography.lineHeight.tight */
+  color: #0D1B2A; /* primary.midnightBlue */
 }
 
+h2 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 600; /* typography.fontWeight.semiBold */
+  line-height: 1.3; /* typography.lineHeight.tight */
+  color: #0D1B2A; /* primary.midnightBlue */
+}
+
+h3 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600; /* typography.fontWeight.semiBold */
+  line-height: 1.4; /* between tight and default */
+  color: #0D1B2A; /* primary.midnightBlue */
+}
+
+/* Base button styles */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-family: 'Open Sans', 'Roboto', Arial, Helvetica, sans-serif;
+  border-radius: 0.25rem; /* 4px */
+  border: none;
+  padding: 0.75rem 1.5rem; /* 12px 24px */
+  font-size: 1rem; /* 16px */
+  font-weight: 600; /* typography.fontWeight.semiBold */
+  background-color: #1A73E8; /* primary.blue */
+  color: #FFFFFF; /* neutral.white */
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background-color 0.2s ease;
 }
+
 button:hover {
-  border-color: #646cff;
+  background-color: #1665C1; /* buttons.primaryHover */
+  border-color: transparent;
 }
+
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 0.125rem solid #1A73E8; /* 2px - primary.blue */
+  outline-offset: 0.125rem; /* 2px */
 }
 
-@media (prefers-color-scheme: light) {
+/* Responsive adjustments */
+@media (max-width: 768px) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+    font-size: 14px; /* Slightly smaller base font size on mobile */
   }
 }

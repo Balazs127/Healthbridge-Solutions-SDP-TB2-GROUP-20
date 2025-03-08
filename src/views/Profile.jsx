@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "../hooks/useUser";
 import { get, fetchCalculations } from "../api/api";
+import { colors, typography, spacing, components } from "../theme";
 
 const Profile = () => {
   const { user } = useUser();
@@ -122,33 +123,28 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "2rem",
+    padding: spacing.lg,
   },
   title: {
-    fontSize: "2rem",
-    marginBottom: "1rem",
-    color: "#2c3e50",
+    fontSize: typography.fontSize.h2,
+    marginBottom: spacing.sm,
+    color: colors.primary.midnightBlue,
   },
   text: {
-    fontSize: "1rem",
-    marginBottom: "0.5rem",
+    fontSize: typography.fontSize.body,
+    marginBottom: spacing.xs,
   },
   alert: {
-    backgroundColor: "#f8d7da",
-    color: "#721c24",
-    padding: "1rem",
-    marginBottom: "1.5rem",
-    borderRadius: "0.25rem",
+    ...components.alert.warning,
     width: "100%",
     maxWidth: "500px",
     textAlign: "center",
-    fontWeight: "bold",
+    marginBottom: spacing.sm,
+    padding: spacing.sm,
+    fontWeight: typography.fontWeight.bold,
   },
   profileCard: {
-    backgroundColor: "white",
-    borderRadius: "8px",
-    padding: "2rem",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    ...components.card,
     width: "100%",
     maxWidth: "500px",
   },
@@ -156,14 +152,14 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "0.75rem 0",
-    borderBottom: "1px solid #eee",
+    padding: `${spacing.xs} 0`,
+    borderBottom: `1px solid ${colors.neutral.lightGray}`,
   },
   fieldLabel: {
-    fontWeight: "bold",
-    color: "#555",
+    fontWeight: typography.fontWeight.bold,
+    color: colors.neutral.mediumGray,
   },
   fieldValue: {
-    color: "#333",
+    color: colors.neutral.darkGray,
   },
 };

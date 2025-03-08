@@ -2,6 +2,8 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { useUser } from "../hooks/useUser";
 import { post } from "../api/api";
+import { colors, typography, spacing, components } from "../theme";
+import "../styles/calculatorStyles.css"; // Import the CSS file
 
 export default function GFRCalculator({ onCalculationComplete }) {
   const { user } = useUser();
@@ -133,44 +135,75 @@ export default function GFRCalculator({ onCalculationComplete }) {
   };
 
   return (
-    <div style={styles.calculator}>
+    <div style={styles.calculator} className="calculator-form">
       <h2 style={styles.title}>eGFR Calculator</h2>
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Creatinine: </label>
-        <input
-          type="number"
-          value={creatinine}
-          onChange={(e) => setCreatinine(e.target.value)}
-          style={styles.input}
-        />
-        <select value={creatinineUnit} onChange={handleCreatinineUnitChange} style={styles.select}>
-          <option value="mg/dL">mg/dL</option>
-          <option value="µmol/L">µmol/L</option>
-        </select>
+      
+      <div className="input-group" style={styles.inputGroup}>
+        <label htmlFor="creatinine" className="form-label" style={styles.label}>Creatinine:</label>
+        <div className="input-with-unit" style={styles.inputWithUnit}>
+          <input
+            id="creatinine"
+            type="number"
+            value={creatinine}
+            onChange={(e) => setCreatinine(e.target.value)}
+            className="input-with-unit-field input-control"
+            style={styles.inputWithAddon}
+            placeholder="Enter value"
+            aria-label="Creatinine value"
+          />
+          <select 
+            id="creatinineUnit"
+            value={creatinineUnit}
+            onChange={handleCreatinineUnitChange}
+            className="unit-selector"
+            style={styles.selectUnit}
+            aria-label="Creatinine unit"
+          >
+            <option value="mg/dL">mg/dL</option>
+            <option value="µmol/L">µmol/L</option>
+          </select>
+        </div>
       </div>
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Age (years): </label>
+      
+      <div className="input-group" style={styles.inputGroup}>
+        <label htmlFor="age" className="form-label" style={styles.label}>Age (years):</label>
         <input
+          id="age"
           type="number"
           value={age}
           onChange={(e) => setAge(e.target.value)}
+          className="input-control"
           style={styles.input}
+          placeholder="Enter age"
+          aria-label="Age in years"
         />
       </div>
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Gender: </label>
-        <select value={gender} onChange={(e) => setGender(e.target.value)} style={styles.select}>
+      
+      <div className="input-group" style={styles.inputGroup}>
+        <label htmlFor="gender" className="form-label" style={styles.label}>Gender:</label>
+        <select
+          id="gender"
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
+          className="input-control"
+          style={styles.select}
+          aria-label="Select gender"
+        >
           <option value="">Select Gender</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
       </div>
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Ethnicity: </label>
+      
+      <div className="input-group" style={styles.inputGroup}>
+        <label htmlFor="ethnicity" className="form-label" style={styles.label}>Ethnicity:</label>
         <select
+          id="ethnicity"
           value={ethnicity}
           onChange={(e) => setEthnicity(e.target.value)}
+          className="input-control"
           style={styles.select}
+          aria-label="Select ethnicity"
         >
           <option value="">Select Ethnicity</option>
           <option value="black">Black</option>
@@ -180,18 +213,24 @@ export default function GFRCalculator({ onCalculationComplete }) {
           <option value="other">Other</option>
         </select>
       </div>
-      <button onClick={calculateEGFR} disabled={calculating} style={styles.button}>
+      
+      <button 
+        onClick={calculateEGFR} 
+        disabled={calculating} 
+        style={styles.button}
+        aria-busy={calculating}
+      >
         {calculating ? "Calculating..." : "Calculate eGFR"}
       </button>
 
       {pediatricMessage && (
-        <div style={styles.message}>
+        <div style={styles.message} role="alert">
           <p>{pediatricMessage}</p>
         </div>
       )}
 
       {egfr && !pediatricMessage && (
-        <div style={styles.results}>
+        <div style={styles.results} role="region" aria-live="polite">
           <p style={styles.resultText}>
             <strong>Result:</strong> {egfr}
           </p>
@@ -210,65 +249,74 @@ GFRCalculator.propTypes = {
 
 const styles = {
   calculator: {
-    backgroundColor: "#fff",
-    borderRadius: "8px",
-    padding: "1.5rem",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    maxWidth: "600px",
+    ...components.card,
+    maxWidth: "37.5rem", // 600px
     margin: "0 auto",
   },
   title: {
-    color: "#2c3e50",
-    marginBottom: "1.5rem",
+    fontSize: typography.fontSize.h2,
+    fontWeight: typography.fontWeight.semiBold,
+    marginBottom: spacing.md,
     textAlign: "center",
+    color: colors.primary.midnightBlue,
   },
   inputGroup: {
-    marginBottom: "1rem",
+    marginBottom: spacing.sm,
     display: "flex",
-    alignItems: "center",
   },
   label: {
-    width: "120px",
-    fontWeight: "500",
+    width: "7.5rem", // 120px
+    fontWeight: typography.fontWeight.semiBold,
+    color: colors.neutral.darkGray,
   },
   input: {
-    padding: "0.5rem",
-    borderRadius: "4px",
-    border: "1px solid #ddd",
+    ...components.forms.input,
     flex: "1",
   },
   select: {
-    padding: "0.5rem",
-    borderRadius: "4px",
-    border: "1px solid #ddd",
-    marginLeft: "0.5rem",
+    ...components.forms.input,
+    marginLeft: spacing.xs,
+  },
+  inputWithUnit: {
+    display: "flex",
+    flex: "1",
+  },
+  inputWithAddon: {
+    ...components.forms.input,
+    borderTopRightRadius: 0,
+    borderBottomRightRadius: 0,
+    borderRight: "none",
+    flex: "1",
+  },
+  selectUnit: {
+    ...components.forms.input,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    borderLeft: "none",
+    width: "5rem",
+    minWidth: "5rem",
+    padding: `0.75rem 0.5rem`,
+    textAlign: "center",
   },
   button: {
-    backgroundColor: "#3498db",
-    color: "#fff",
-    padding: "0.75rem 1.5rem",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "1rem",
-    marginTop: "1rem",
+    ...components.buttons.primary,
     width: "100%",
+    marginTop: spacing.md,
   },
   message: {
-    backgroundColor: "#fff3cd",
-    color: "#856404",
-    padding: "0.75rem",
-    borderRadius: "4px",
-    marginTop: "1rem",
+    ...components.alert.warning,
+    marginTop: spacing.sm,
   },
   results: {
-    backgroundColor: "#e8f4f8",
-    padding: "1rem",
-    borderRadius: "4px",
-    marginTop: "1.5rem",
+    backgroundColor: "rgba(26, 115, 232, 0.1)",
+    padding: spacing.md,
+    borderRadius: "0.25rem", // 4px
+    marginTop: spacing.md,
   },
   resultText: {
-    margin: "0.5rem 0",
-    fontSize: "1.1rem",
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+    fontSize: typography.fontSize.body,
+    color: colors.primary.midnightBlue,
   },
 };

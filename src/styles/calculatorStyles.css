@@ -1,0 +1,92 @@
+/* Responsive styles for GFR Calculator */
+
+/* Mobile-first styles */
+.calculator-form .input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.calculator-form .form-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.calculator-form .input-control {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.calculator-form .input-with-unit {
+  display: flex;
+  width: 100%;
+}
+
+.calculator-form .input-with-unit-field {
+  flex: 1;
+  min-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.calculator-form .unit-selector {
+  width: 5rem;
+  min-width: 5rem;
+  padding: 0 0.5rem;
+  text-align: center;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.calculator-form input[type="number"]::-webkit-outer-spin-button,
+.calculator-form input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Desktop styles */
+@media (min-width: 48rem) { /* 768px and above */
+  .calculator-form .input-group {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .calculator-form .form-label {
+    width: 7.5rem; /* 120px */
+    margin-bottom: 0;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+  
+  .calculator-form .input-control {
+    flex: 1;
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* Adjust for small mobile screens */
+@media (max-width: 360px) {
+  .calculator-form .input-with-unit {
+    flex-direction: column;
+  }
+  
+  .calculator-form .input-with-unit-field {
+    border-radius: 0.25rem; /* 4px */
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: none;
+  }
+  
+  .calculator-form .unit-selector {
+    width: 100%;
+    border-radius: 0.25rem; /* 4px */
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top: none;
+  }
+}
