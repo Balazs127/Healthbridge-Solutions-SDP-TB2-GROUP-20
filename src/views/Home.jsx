@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
 import { useState, useEffect } from "react";
 import { get } from "../api/api";
+import { colors, typography, spacing, components } from "../theme";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -82,53 +83,55 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "2rem",
+    padding: spacing.lg,
   },
   hero: {
-    backgroundColor: "#4CAF50",
-    color: "white",
-    padding: "4rem",
+    backgroundColor: colors.primary.blue,
+    color: colors.neutral.white,
+    padding: spacing.xl,
     textAlign: "center",
-    borderRadius: "8px",
-    marginBottom: "2rem",
+    borderRadius: "0.5rem",
+    marginBottom: spacing.lg,
     width: "100%",
   },
   heroTitle: {
-    fontSize: "2.5rem",
-    margin: "0 0 1rem 0",
+    fontSize: typography.fontSize.h1,
+    color: colors.neutral.white,
+    fontWeight: typography.fontWeight.semiBold,
+    marginBottom: spacing.xs,
   },
   heroSubtitle: {
-    fontSize: "1.5rem",
-    margin: "0 0 2rem 0",
+    fontSize: typography.fontSize.h3,
+    marginBottom: spacing.lg,
   },
   heroButton: {
-    padding: "0.75rem 1.5rem",
-    fontSize: "1rem",
-    color: "#4CAF50",
-    backgroundColor: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
+    ...components.buttons.primary,
+    backgroundColor: colors.neutral.white,
+    color: colors.primary.blue,
   },
   section: {
-    marginBottom: "2rem",
+    marginBottom: spacing.lg,
     width: "100%",
     textAlign: "center",
   },
   sectionTitle: {
-    fontSize: "2rem",
-    margin: "0 0 1rem 0",
+    fontSize: typography.fontSize.h2,
+    fontWeight: typography.fontWeight.semiBold,
+    marginBottom: spacing.sm,
+    color: colors.primary.midnightBlue,
   },
   sectionText: {
-    fontSize: "1.2rem",
-    margin: "0 0 1rem 0",
+    fontSize: typography.fontSize.body,
+    marginBottom: spacing.sm,
+    color: colors.neutral.darkGray,
   },
   serviceList: {
     listStyle: "none",
     padding: 0,
   },
   serviceItem: {
-    fontSize: "1.2rem",
-    margin: "0.5rem 0",
+    fontSize: typography.fontSize.body,
+    margin: `${spacing.xs} 0`,
+    color: colors.neutral.darkGray,
   },
 };
