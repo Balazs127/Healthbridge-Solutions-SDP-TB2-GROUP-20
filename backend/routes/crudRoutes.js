@@ -1,6 +1,6 @@
 import express from "express";
 
-const createCrudRoutes = (pool, tableName) => {
+const createCrudRoutes = (pool, tableName, primaryKey = "id") => {
   const router = express.Router();
 
   // GET all records (with optional filtering)
@@ -28,7 +28,9 @@ const createCrudRoutes = (pool, tableName) => {
   // GET a record by ID
   router.get("/:id", async (req, res) => {
     try {
-      const [rows] = await pool.query(`SELECT * FROM ${tableName} WHERE id = ?`, [req.params.id]);
+      const [rows] = await pool.query(`SELECT * FROM ${tableName} WHERE ${primaryKey} = ?`, [
+        req.params.id,
+      ]);
       if (rows.length === 0) {
         return res.status(404).json({ message: "Record not found" });
       }
@@ -43,7 +45,9 @@ const createCrudRoutes = (pool, tableName) => {
     try {
       const newRecord = req.body;
       const columns = Object.keys(newRecord).join(", ");
-      const placeholders = Object.keys(newRecord).map(() => "?").join(", ");
+      const placeholders = Object.keys(newRecord)
+        .map(() => "?")
+        .join(", ");
       const values = Object.values(newRecord);
 
       const query = `INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`;
@@ -59,10 +63,12 @@ const createCrudRoutes = (pool, tableName) => {
   router.put("/:id", async (req, res) => {
     try {
       const updatedRecord = req.body;
-      const columns = Object.keys(updatedRecord).map((key) => `${key} = ?`).join(", ");
+      const columns = Object.keys(updatedRecord)
+        .map((key) => `${key} = ?`)
+        .join(", ");
       const values = [...Object.values(updatedRecord), req.params.id];
 
-      const query = `UPDATE ${tableName} SET ${columns} WHERE id = ?`;
+      const query = `UPDATE ${tableName} SET ${columns} WHERE ${primaryKey} = ?`;
       const [result] = await pool.query(query, values);
 
       res.json({ affectedRows: result.affectedRows });
@@ -75,10 +81,12 @@ const createCrudRoutes = (pool, tableName) => {
   router.patch("/:id", async (req, res) => {
     try {
       const updates = req.body;
-      const columns = Object.keys(updates).map((key) => `${key} = ?`).join(", ");
+      const columns = Object.keys(updates)
+        .map((key) => `${key} = ?`)
+        .join(", ");
       const values = [...Object.values(updates), req.params.id];
 
-      const query = `UPDATE ${tableName} SET ${columns} WHERE id = ?`;
+      const query = `UPDATE ${tableName} SET ${columns} WHERE ${primaryKey} = ?`;
       const [result] = await pool.query(query, values);
 
       res.json({ affectedRows: result.affectedRows });
@@ -90,7 +98,9 @@ const createCrudRoutes = (pool, tableName) => {
   // DELETE - Remove a record by ID
   router.delete("/:id", async (req, res) => {
     try {
-      const [result] = await pool.query(`DELETE FROM ${tableName} WHERE id = ?`, [req.params.id]);
+      const [result] = await pool.query(`DELETE FROM ${tableName} WHERE ${primaryKey} = ?`, [
+        req.params.id,
+      ]);
       res.json({ affectedRows: result.affectedRows });
     } catch (error) {
       res.status(500).json({ message: "Error deleting record", error });
