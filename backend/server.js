@@ -35,11 +35,14 @@ async function testDBConnection() {
 
 testDBConnection();
 
-// Define tables and automatically generate routes
-const tables = ["patientlogin", "egfr_calculations", "clinicianlogin"];
+const tableConfigs = {
+  patientlogin: "PatientID",
+  clinicianlogin: "ClinicianID",
+  egfr_calculations: "CalculationID",
+};
 
-tables.forEach((table) => {
-  app.use(`/api/${table}`, createCrudRoutes(pool, table));
+Object.entries(tableConfigs).forEach(([tableName, primaryKey]) => {
+  app.use(`/api/${tableName}`, createCrudRoutes(pool, tableName, primaryKey));
 });
 
 // Start Server
