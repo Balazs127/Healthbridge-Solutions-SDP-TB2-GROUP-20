@@ -1,93 +1,99 @@
 import express from "express";
-import { generateNextId } from "../generateId.js";
-import { idConfig } from "../idConfig.js";
 
-const createCrudRoutes = (client, dbName, collectionName) => {
+const createCrudRoutes = (pool, tableName) => {
   const router = express.Router();
-  const collection = client.db(dbName).collection(collectionName);
 
-  // GET all documents
+  // GET all records (with optional filtering)
   router.get("/", async (req, res) => {
     try {
-      const { field, value, ...otherParams } = req.query;
-      const query = {};
+      const filters = req.query;
+      let query = `SELECT * FROM ${tableName}`;
+      let values = [];
 
-      if (field && value) {
-        query[field] = value;
+      if (Object.keys(filters).length > 0) {
+        const conditions = Object.keys(filters)
+          .map((key) => `${key} = ?`)
+          .join(" AND ");
+        query += ` WHERE ${conditions}`;
+        values = Object.values(filters);
       }
-      
-      Object.keys(otherParams).forEach(key => {
-        query[key] = otherParams[key];
-      });
 
-      const data = await collection.find(query).toArray();
-      res.status(200).json(data);
+      const [rows] = await pool.query(query, values);
+      res.json(rows);
     } catch (error) {
       res.status(500).json({ message: "Error fetching data", error });
     }
   });
 
-  // GET a document by ID
+  // GET a record by ID
   router.get("/:id", async (req, res) => {
     try {
-      const document = await collection.findOne({ _id: req.params.id });
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
+      const [rows] = await pool.query(`SELECT * FROM ${tableName} WHERE id = ?`, [req.params.id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ message: "Record not found" });
       }
-      res.status(200).json(document);
+      res.json(rows[0]);
     } catch (error) {
-      res.status(500).json({ message: "Error fetching document", error });
+      res.status(500).json({ message: "Error fetching record", error });
     }
   });
 
-  // POST - Create new document
+  // POST - Create new record
   router.post("/", async (req, res) => {
     try {
-      let newDoc = { ...req.body };
+      const newRecord = req.body;
+      const columns = Object.keys(newRecord).join(", ");
+      const placeholders = Object.keys(newRecord).map(() => "?").join(", ");
+      const values = Object.values(newRecord);
 
-      const config = idConfig[collectionName];
-      if (config && !newDoc._id) {
-        const nextId = await generateNextId(collection, config);
-        newDoc._id = nextId;
-      }
+      const query = `INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`;
+      const [result] = await pool.query(query, values);
 
-      const result = await collection.insertOne(newDoc);
-      res.status(201).json(result);
+      res.status(201).json({ id: result.insertId, ...newRecord });
     } catch (error) {
-      console.error("Error in POST:", error);
-      res.status(500).json({ message: "Error adding document", error });
+      res.status(500).json({ message: "Error adding record", error });
     }
   });
 
-  // PUT - Replace a document by ID
+  // PUT - Replace a record by ID
   router.put("/:id", async (req, res) => {
     try {
-      const updatedDoc = req.body;
-      const result = await collection.replaceOne({ _id: req.params.id }, updatedDoc);
-      res.status(200).json(result);
+      const updatedRecord = req.body;
+      const columns = Object.keys(updatedRecord).map((key) => `${key} = ?`).join(", ");
+      const values = [...Object.values(updatedRecord), req.params.id];
+
+      const query = `UPDATE ${tableName} SET ${columns} WHERE id = ?`;
+      const [result] = await pool.query(query, values);
+
+      res.json({ affectedRows: result.affectedRows });
     } catch (error) {
-      res.status(500).json({ message: "Error updating document", error });
+      res.status(500).json({ message: "Error updating record", error });
     }
   });
 
-  // PATCH - Update part of a document by ID
+  // PATCH - Update part of a record by ID
   router.patch("/:id", async (req, res) => {
     try {
       const updates = req.body;
-      const result = await collection.updateOne({ _id: req.params.id }, { $set: updates });
-      res.status(200).json(result);
+      const columns = Object.keys(updates).map((key) => `${key} = ?`).join(", ");
+      const values = [...Object.values(updates), req.params.id];
+
+      const query = `UPDATE ${tableName} SET ${columns} WHERE id = ?`;
+      const [result] = await pool.query(query, values);
+
+      res.json({ affectedRows: result.affectedRows });
     } catch (error) {
-      res.status(500).json({ message: "Error updating document", error });
+      res.status(500).json({ message: "Error updating record", error });
     }
   });
 
-  // DELETE - Remove a document by ID
+  // DELETE - Remove a record by ID
   router.delete("/:id", async (req, res) => {
     try {
-      const result = await collection.deleteOne({ _id: req.params.id });
-      res.status(200).json(result);
+      const [result] = await pool.query(`DELETE FROM ${tableName} WHERE id = ?`, [req.params.id]);
+      res.json({ affectedRows: result.affectedRows });
     } catch (error) {
-      res.status(500).json({ message: "Error deleting document", error });
+      res.status(500).json({ message: "Error deleting record", error });
     }
   });
 
