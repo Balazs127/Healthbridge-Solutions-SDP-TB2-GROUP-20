@@ -22,20 +22,45 @@ const patch = (endpoint, data = {}) => {
   return axios.patch(`${API_BASE_URL}/${endpoint}`, data);
 };
 
+/**
+ * Handles API responses consistently, with options for normalizing data
+ * @param {Promise} promise - The axios promise
+ * @param {Function} setData - Optional state setter for data
+ * @param {Function} setLoading - Optional state setter for loading status
+ * @param {Function} setError - Optional state setter for error state
+ * @param {string} errorMessage - Error message to use if request fails
+ * @param {string} logLabel - Label for console logging
+ * @param {boolean} asArray - Whether to normalize response data as an array
+ */
 const handleApiResponse = (
   promise,
   setData = null,
   setLoading = null,
   setError = null,
   errorMessage = "API request failed",
-  logLabel = "API data"
+  logLabel = "API data",
+  asArray = false
 ) => {
   if (setLoading) setLoading(true);
-  
+
   return promise
     .then((response) => {
       console.log(`${logLabel} response:`, response.data);
-      if (setData) setData(response.data);
+
+      if (setData) {
+        // Normalize data to array if requested
+        if (asArray) {
+          const normalizedData = Array.isArray(response.data)
+            ? response.data
+            : response.data
+            ? [response.data]
+            : [];
+          setData(normalizedData);
+        } else {
+          setData(response.data);
+        }
+      }
+
       if (setLoading) setLoading(false);
       return response;
     })
@@ -48,38 +73,37 @@ const handleApiResponse = (
 };
 
 const fetchCalculations = (
-  field,
-  value,
+  filters = {},
   setData,
   setLoading,
   setError,
   errorMessage = "Failed to load data"
 ) => {
-  console.log(`Fetching calculations with ${field}=${value}`);
-  
-  if (!value) {
-    console.error("Missing value for fetch calculations");
-    setError("Missing patient ID");
+  console.log(`Fetching calculations with filters:`, filters);
+
+  if (Object.keys(filters).length === 0) {
+    console.error("Missing filters for fetch calculations");
+    setError("Missing query parameters");
     setLoading(false);
-    return Promise.reject("Missing value");
+    return Promise.reject("Missing filters");
   }
-  
+
   return handleApiResponse(
-    get("egfr_calculations", { field, value }),
+    get("egfr_calculations", filters),
     setData,
     setLoading,
     setError,
     errorMessage,
-    "Calculations"
+    "Calculations",
+    true // Always normalize as array
   );
 };
 
 const fetchUserData = (user, setUserData, setLoading = null, setError = null) => {
   if (!user || !user.isAuthenticated) return Promise.resolve(null);
-  
-  const endpoint = user.userType === "patient" 
-    ? `patientlogin/${user.userId}` 
-    : `clinicianlogin/${user.userId}`;
+
+  const endpoint =
+    user.userType === "patient" ? `patientlogin/${user.userId}` : `clinicianlogin/${user.userId}`;
 
   return handleApiResponse(
     get(endpoint),
@@ -99,12 +123,13 @@ const fetchPatientsByClinicianId = (
   errorMessage = "Failed to load patients"
 ) => {
   return handleApiResponse(
-    get("patientlogin", { field: "ClinicianID", value: clinicianId }),
+    get("patientlogin", { ClinicianID: clinicianId }),
     setData,
     setLoading,
     setError,
     errorMessage,
-    "Patients list"
+    "Patients list",
+    true // Always normalize as array
   );
 };
 
@@ -125,16 +150,16 @@ const fetchPatientById = (
   );
 };
 
-export { 
-  API_BASE_URL, 
-  get, 
-  post, 
-  put, 
-  del as delete, 
-  patch, 
-  fetchCalculations, 
+export {
+  API_BASE_URL,
+  get,
+  post,
+  put,
+  del as delete,
+  patch,
+  fetchCalculations,
   fetchUserData,
   fetchPatientsByClinicianId,
   fetchPatientById,
-  handleApiResponse 
+  handleApiResponse,
 };

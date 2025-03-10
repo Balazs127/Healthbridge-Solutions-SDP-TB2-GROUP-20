@@ -3,25 +3,27 @@ import { useUser } from "../hooks/useUser";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchCalculations, fetchPatientById } from "../api/api";
 import { colors, typography, spacing } from "../theme";
+import PropTypes from "prop-types";
 
 const CalculationData = ({ isClinicianView = false }) => {
+  // Hooks -------------------------------------------------------------------
   const { user } = useUser();
   const navigate = useNavigate();
   const { patientId } = useParams();
+
+  // State -------------------------------------------------------------------
   const [mongoData, setMongoData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [patientDetails, setPatientDetails] = useState(null);
   const [loadingPatient, setLoadingPatient] = useState(isClinicianView);
 
+  // Effects -----------------------------------------------------------------
   // Fetch patient details if in clinician view
   useEffect(() => {
     if (isClinicianView && patientId) {
-      fetchPatientById(
-        patientId, 
-        setPatientDetails, 
-        setLoadingPatient, 
-        (err) => console.error("Error fetching patient details:", err)
+      fetchPatientById(patientId, setPatientDetails, setLoadingPatient, (err) =>
+        console.error("Error fetching patient details:", err)
       );
     }
   }, [isClinicianView, patientId]);
@@ -32,50 +34,41 @@ const CalculationData = ({ isClinicianView = false }) => {
     // Determine which patient's data to show
     const targetPatientId = isClinicianView ? patientId : user.userId;
     console.log("Fetching calculations for patientId:", targetPatientId);
-    
-    const field = "PatientID";
-    
-    fetchCalculations(
-      field, 
-      targetPatientId, 
-      setMongoData, 
-      setLoading, 
-      setError
-    );
+
+    fetchCalculations({ PatientID: targetPatientId }, setMongoData, setLoading, setError);
   }, [user.isAuthenticated, user.userId, user.userType, isClinicianView, patientId]);
 
+  // Functions ---------------------------------------------------------------
   // Get patient name for display
   const getPatientName = () => {
     if (!isClinicianView) {
       return "Your GFR Calculation Records";
     }
-    
+
     if (loadingPatient) {
       return "Loading patient details...";
     }
-    
+
     if (!patientDetails) {
       return `GFR Records for Patient ${patientId || "Unknown"}`;
     }
-    
+
     return `GFR Records for ${patientDetails.FirstName} ${patientDetails.LastName}`;
   };
 
+  // View --------------------------------------------------------------------
   return (
     <section style={styles.section}>
       {isClinicianView && (
         <div style={styles.backButtonContainer}>
-          <button 
-            onClick={() => navigate("/patientList")}
-            style={styles.backButton}
-          >
+          <button onClick={() => navigate("/patientList")} style={styles.backButton}>
             &larr; Back to Patient List
           </button>
         </div>
       )}
-      
+
       <h2 style={styles.h2}>{getPatientName()}</h2>
-      
+
       {loading ? (
         <p>Loading data...</p>
       ) : error ? (
@@ -128,8 +121,6 @@ const CalculationData = ({ isClinicianView = false }) => {
   );
 };
 
-export default CalculationData;
-
 const styles = {
   section: {
     marginBottom: spacing.lg,
@@ -181,5 +172,11 @@ const styles = {
   errorMessage: {
     color: colors.semantic.error,
     fontWeight: typography.fontWeight.semiBold,
-  }
+  },
 };
+
+CalculationData.propTypes = {
+  isClinicianView: PropTypes.bool,
+};
+
+export default CalculationData;

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import {
   ResponsiveContainer,
   LineChart,
@@ -8,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import PropTypes from "prop-types";
+import { colors, typography, spacing } from "../theme";
 
 const calculateStage = (eGFR) => {
   if (eGFR > 90) return "G1";
@@ -21,53 +22,33 @@ const calculateStage = (eGFR) => {
 };
 
 const GFRGraph = ({ data }) => {
-  const formattedData = data
-    .map((item) => {
-      let formattedDate;
-      try {
-        formattedDate = new Date(item.CreatedAt).toLocaleDateString();
-        if (formattedDate === "Invalid Date") {
-          formattedDate = "Unknown Date";
-        }
-      } catch (e) {
-        console.error("Error parsing date:", e);
-        formattedDate = "Unknown Date";
-      }
+  // Data --------------------------------------------------------------------
+  const chartData = Array.isArray(data) ? data : [];
 
-      let eGFRValue;
-      try {
-        const eGFRString =
-          typeof item.eGFR === "number" ? item.eGFR.toString() : String(item.eGFR || "0");
+  // Sort data by date
+  const sortedData = [...chartData].sort((a, b) => {
+    return new Date(a.CreatedAt) - new Date(b.CreatedAt);
+  });
 
-        const cleanedValue = eGFRString.replace(/[^\d.]/g, "");
-        eGFRValue = parseFloat(cleanedValue);
+  const preparedData = sortedData.map((item) => {
+    // Ensure eGFR is a number
+    let eGFRValue;
+    if (typeof item.eGFR_numeric === "number") {
+      eGFRValue = item.eGFR_numeric;
+    } else {
+      const eGFRString = String(item.eGFR || "0");
+      eGFRValue = parseFloat(eGFRString.replace(/[^\d.]/g, ""));
+    }
 
-        if (isNaN(eGFRValue)) {
-          console.warn("Invalid eGFR value:", item.eGFR);
-          eGFRValue = 0;
-        }
-      } catch (e) {
-        console.error("Error parsing eGFR:", e);
-        eGFRValue = 0;
-      }
+    return {
+      date: new Date(item.CreatedAt).toLocaleDateString(),
+      eGFR: isNaN(eGFRValue) ? 0 : eGFRValue,
+      stage: calculateStage(eGFRValue),
+      rawDate: item.CreatedAt,
+    };
+  });
 
-      return {
-        date: formattedDate,
-        eGFR: eGFRValue,
-        stage: calculateStage(eGFRValue),
-        rawDate: item.CreatedAt,
-      };
-    })
-    .filter((item) => item.eGFR > 0)
-    .sort((a, b) => {
-      try {
-        return new Date(a.rawDate) - new Date(b.rawDate);
-      } catch (e) {
-        console.error("Error sorting dates:", e);
-        return 0;
-      }
-    });
-
+  // Methods -----------------------------------------------------------------
   const getStageColor = (stage) => {
     switch (stage) {
       case "G1":
@@ -87,95 +68,76 @@ const GFRGraph = ({ data }) => {
     }
   };
 
+  // View --------------------------------------------------------------------
   return (
-    <div style={styles.graphContainer}>
-      <h3 style={styles.title}>eGFR History</h3>
-      {data.length === 0 ? (
-        <p style={styles.noData}>No previous calculations found.</p>
-      ) : (
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={formattedData} margin={{ top: 5, right: 30, left: 45, bottom: 40 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-  dataKey="date" 
-  label={{ 
-    value: "Date", 
-    position: "bottom", 
-    offset: 25  // Increased from 20 to 25
-  }} 
-  padding={{ left: 10, right: 10 }} // Adds spacing on both sides
-/>
-            <YAxis
-      label={{ 
-        value: "eGFR Value (mL/min/1.73m²)", 
-        angle: -90, 
-        position: "insideLeft",
-        offset: -35  // Added negative offset to move label away from axis
-      }}
-      domain={[0, "auto"]}
-    />
-            <Tooltip
-              formatter={(value, name) => [
-                value.toFixed(1),
-                name === "eGFR" ? "eGFR (mL/min/1.73m²)" : name,
-              ]}
-              labelFormatter={(label) => `Date: ${label}`}
-            />
-            <Legend 
-  align="center" 
-  verticalAlign="top" 
-  wrapperStyle={{ paddingBottom: "10px" }} 
-  payload={[
-    { value: "eGFR", type: "line", color: "#2196f3" },
-    { value: "eGFR Data", type: "line", color: "#ff9800" }
-  ]}
-/>
-            <Line
-  type="monotone"
-  dataKey="eGFR"
-  stroke="#2196f3"
-  strokeWidth={2}
-  
-  dot={false}
-  connectNulls
-/>
-<Line
-  type="monotone"
-  dataKey="eGFR"
-  stroke={(entry) => getStageColor(entry.stage)}
-  strokeWidth={2}
-  dot={(props) => {
-    const { cx, cy, payload } = props;
-    return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={6}
-        fill={getStageColor(payload.stage)}
-        stroke={getStageColor(payload.stage)}
-        strokeWidth={1}
-      />
-    );
-  }}
-  activeDot={(props) => {
-    const { cx, cy, payload } = props;
-    return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={8}
-        fill={getStageColor(payload.stage)}
-        stroke={getStageColor(payload.stage)}
-        strokeWidth={2}
-      />
-    );
-  }}
-/>
-          </LineChart>
-        </ResponsiveContainer>
-      )}
+    <div style={styles.container}>
+      <div style={styles.chartSection}>
+        <h3 style={styles.title}>Your eGFR History</h3>
+
+        {preparedData.length === 0 ? (
+          <p style={styles.noData}>No calculation history available yet.</p>
+        ) : (
+          <div style={styles.chartContainer}>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={preparedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis
+                  label={{
+                    value: "eGFR (ml/min/1.73m²)",
+                    angle: -90,
+                    position: "insideLeft",
+                    style: { textAnchor: "middle" },
+                  }}
+                />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="eGFR"
+                  stroke={colors.primary.blue}
+                  activeDot={{ r: 8 }}
+                  name="eGFR Value"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="eGFR"
+                  stroke={(entry) => getStageColor(entry.stage)}
+                  strokeWidth={2}
+                  dot={(props) => {
+                    const { cx, cy, payload } = props;
+                    return (
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={6}
+                        fill={getStageColor(payload.stage)}
+                        stroke={getStageColor(payload.stage)}
+                        strokeWidth={1}
+                      />
+                    );
+                  }}
+                  activeDot={(props) => {
+                    const { cx, cy, payload } = props;
+                    return (
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={8}
+                        fill={getStageColor(payload.stage)}
+                        stroke={getStageColor(payload.stage)}
+                        strokeWidth={2}
+                      />
+                    );
+                  }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
       <div style={styles.legend}>
-        <p>
+        <p style={styles.legendTitle}>
           <strong>CKD Stages Color Guide:</strong>
         </p>
         <div style={styles.stageLegend}>
@@ -208,29 +170,41 @@ const GFRGraph = ({ data }) => {
 };
 
 const styles = {
-  graphContainer: {
-    marginBottom: "2rem",
-    padding: "1rem",
-    backgroundColor: "#fff",
+  container: {
+    padding: spacing.md,
+  },
+  chartSection: {
+    backgroundColor: colors.neutral.white,
     borderRadius: "8px",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    padding: spacing.md,
+    marginBottom: spacing.lg,
   },
   title: {
+    fontSize: typography.fontSize.h3,
+    color: colors.primary.midnightBlue,
     textAlign: "center",
-    marginBottom: "1rem",
-    color: "#2c3e50",
+    marginBottom: spacing.md,
+  },
+  chartContainer: {
+    width: "100%",
+    height: 300,
   },
   noData: {
     textAlign: "center",
-    color: "#666",
-    padding: "2rem",
+    color: colors.neutral.mediumGray,
+    padding: spacing.lg,
   },
   legend: {
-    marginTop: "2rem",  // Increased from 1rem to 2rem
-    fontSize: "0.9rem",
-    padding: "1rem",    // Added padding
-    backgroundColor: "#f5f5f5", // Optional: adds a subtle background
-    borderRadius: "8px", // Optional: matches container style
+    marginTop: spacing.lg,
+    backgroundColor: colors.neutral.white,
+    padding: spacing.md,
+    borderRadius: "8px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+  },
+  legendTitle: {
+    marginBottom: spacing.sm,
+    color: colors.primary.midnightBlue,
   },
   stageLegend: {
     display: "flex",
@@ -247,12 +221,12 @@ const styles = {
 };
 
 GFRGraph.propTypes = {
-  data: PropTypes.arrayOf(
-    PropTypes.shape({
-      CreatedAt: PropTypes.string.isRequired,
-      eGFR: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  data: PropTypes.array.isRequired,
+  payload: PropTypes.shape({
+    stage: PropTypes.string,
+  }),
+  cx: PropTypes.number,
+  cy: PropTypes.number,
 };
 
 export default GFRGraph;

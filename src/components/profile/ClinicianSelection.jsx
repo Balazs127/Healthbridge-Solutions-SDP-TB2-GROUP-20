@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { get, put } from "../../api/api";
 import { colors, typography, spacing, components } from "../../theme";
 import ProfileField from "./ProfileField";
 
 const ClinicianSelection = ({ userId, userData, updateUserData }) => {
+  // State -------------------------------------------------------------------
   const [clinicians, setClinicians] = useState([]);
   const [selectedClinicianId, setSelectedClinicianId] = useState("");
   const [savingClinician, setSavingClinician] = useState(false);
@@ -13,26 +15,29 @@ const ClinicianSelection = ({ userId, userData, updateUserData }) => {
   const [currentClinician, setCurrentClinician] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Effects -----------------------------------------------------------------
   // Fetch available clinicians
   useEffect(() => {
     setLoading(true);
     get("clinicianlogin")
-      .then(response => {
+      .then((response) => {
         setClinicians(response.data);
-        
+
         // If patient already has an assigned clinician, select it by default
         if (userData && userData.ClinicianID) {
           setSelectedClinicianId(userData.ClinicianID);
-          
+
           // Find the clinician object to display name in profile
-          const assignedClinician = response.data.find(c => c._id === userData.ClinicianID);
+          const assignedClinician = response.data.find(
+            (c) => c.ClinicianID === userData.ClinicianID
+          );
           if (assignedClinician) {
             setCurrentClinician(assignedClinician);
           }
         }
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Error fetching clinicians:", err);
         setLoading(false);
       });
@@ -57,39 +62,40 @@ const ClinicianSelection = ({ userId, userData, updateUserData }) => {
     setSavingClinician(true);
     setClinicianUpdateError("");
     setClinicianUpdateSuccess(false);
-    
-    put(`patientlogin/${userId}`, { 
-      ...userData, 
-      ClinicianID: selectedClinicianId 
+
+    put(`patientlogin/${userId}`, {
+      ...userData,
+      ClinicianID: selectedClinicianId,
     })
-      .then(response => {
+      .then(() => {
         setSavingClinician(false);
         setClinicianUpdateSuccess(true);
-        
+
         // Find the clinician object to update the displayed name
-        const updatedClinician = clinicians.find(c => c._id === selectedClinicianId);
+        const updatedClinician = clinicians.find((c) => c.ClinicianID === selectedClinicianId);
         if (updatedClinician) {
           setCurrentClinician(updatedClinician);
         }
-        
+
         // Update parent component's state
         if (updateUserData) {
           updateUserData({ ...userData, ClinicianID: selectedClinicianId });
         }
-        
+
         // Hide edit mode after successful update
         setTimeout(() => {
           setClinicianUpdateSuccess(false);
           setIsEditingClinician(false);
         }, 2000);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Error updating clinician:", err);
         setSavingClinician(false);
         setClinicianUpdateError("Failed to update clinician. Please try again.");
       });
   };
 
+  // View --------------------------------------------------------------------
   return (
     <>
       {/* Display current clinician with edit button */}
@@ -101,14 +107,10 @@ const ClinicianSelection = ({ userId, userData, updateUserData }) => {
             ) : currentClinician ? (
               `Dr. ${currentClinician.FirstName} ${currentClinician.LastName}`
             ) : (
-              'Not assigned'
+              "Not assigned"
             )}
           </span>
-          <button 
-            onClick={toggleEditClinician} 
-            style={styles.editButton}
-            disabled={loading}
-          >
+          <button onClick={toggleEditClinician} style={styles.editButton} disabled={loading}>
             {isEditingClinician ? "Cancel" : "Edit"}
           </button>
         </div>
@@ -120,42 +122,36 @@ const ClinicianSelection = ({ userId, userData, updateUserData }) => {
           <h3 style={styles.sectionTitle}>
             {currentClinician ? "Change Assigned Clinician" : "Assign a Clinician"}
           </h3>
-          
+
           {clinicianUpdateSuccess && (
-            <div style={styles.successMessage}>
-              Clinician assignment updated successfully!
-            </div>
+            <div style={styles.successMessage}>Clinician assignment updated successfully!</div>
           )}
-          
-          {clinicianUpdateError && (
-            <div style={styles.errorMessage}>
-              {clinicianUpdateError}
-            </div>
-          )}
-          
+
+          {clinicianUpdateError && <div style={styles.errorMessage}>{clinicianUpdateError}</div>}
+
           <div style={styles.formGroup}>
             <label htmlFor="clinician-select" style={styles.label}>
               Select your clinician:
             </label>
-            <select 
+            <select
               id="clinician-select"
-              value={selectedClinicianId} 
+              value={selectedClinicianId}
               onChange={handleClinicianChange}
               style={styles.select}
               disabled={savingClinician}
             >
               <option value="">-- Select a clinician --</option>
-              {clinicians.map(clinician => (
-                <option key={clinician._id} value={clinician._id}>
+              {clinicians.map((clinician) => (
+                <option key={clinician.ClinicianID} value={clinician.ClinicianID}>
                   Dr. {clinician.FirstName} {clinician.LastName}
                 </option>
               ))}
             </select>
           </div>
-          
-          <button 
-            onClick={saveSelectedClinician} 
-            disabled={!selectedClinicianId || savingClinician} 
+
+          <button
+            onClick={saveSelectedClinician}
+            disabled={!selectedClinicianId || savingClinician}
             style={selectedClinicianId ? styles.button : styles.buttonDisabled}
           >
             {savingClinician ? "Saving..." : "Save Clinician"}
@@ -236,8 +232,14 @@ const styles = {
   loadingText: {
     color: colors.neutral.mediumGray,
     fontSize: typography.fontSize.small,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
+};
+
+ClinicianSelection.propTypes = {
+  userId: PropTypes.string.isRequired,
+  userData: PropTypes.object.isRequired,
+  updateUserData: PropTypes.func,
 };
 
 export default ClinicianSelection;

@@ -5,17 +5,19 @@ import { fetchPatientsByClinicianId } from "../api/api";
 import { colors, typography, spacing } from "../theme";
 
 const PatientList = () => {
+  // State -------------------------------------------------------------------
   const { user } = useUser();
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Effects -----------------------------------------------------------------
   useEffect(() => {
     if (!user.isAuthenticated || user.userType !== "clinician") return;
 
     // Debug user ID to make sure it's correct
     console.log("Fetching patients for clinician:", user.userId);
-    
+
     fetchPatientsByClinicianId(user.userId, setPatients, setLoading, setError);
   }, [user]);
 
@@ -24,10 +26,11 @@ const PatientList = () => {
     console.log("Patient data received:", patients);
   }, [patients]);
 
+  // View --------------------------------------------------------------------
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Patients Under Your Care</h2>
-      
+
       {loading ? (
         <p>Loading patients...</p>
       ) : error ? (
@@ -41,8 +44,7 @@ const PatientList = () => {
           </p>
           <ul style={styles.patientList}>
             {patients.map((patient) => {
-              // Use the _id field as patient ID
-              const patientId = patient._id;
+              const patientId = patient.PatientID;
               return (
                 <li key={patientId} style={styles.patientItem}>
                   <Link to={`/patientData/${patientId}`} style={styles.patientLink}>
@@ -51,13 +53,17 @@ const PatientList = () => {
                         {patient.FirstName} {patient.LastName}
                       </h3>
                       <div style={styles.patientDetails}>
-                        <p><strong>Patient ID:</strong> {patientId}</p>
-                        <p><strong>Email:</strong> {patient.Email}</p>
-                        <p><strong>Phone:</strong> {patient.PhoneNumber || "N/A"}</p>
+                        <p>
+                          <strong>Patient ID:</strong> {patientId}
+                        </p>
+                        <p>
+                          <strong>Email:</strong> {patient.Email}
+                        </p>
+                        <p>
+                          <strong>Phone:</strong> {patient.PhoneNumber || "N/A"}
+                        </p>
                       </div>
-                      <div style={styles.viewButton}>
-                        View Patient Records
-                      </div>
+                      <div style={styles.viewButton}>View Patient Records</div>
                     </div>
                   </Link>
                 </li>
@@ -69,8 +75,6 @@ const PatientList = () => {
     </section>
   );
 };
-
-export default PatientList;
 
 const styles = {
   section: {
@@ -111,7 +115,7 @@ const styles = {
     boxShadow: "0 0.125rem 0.25rem rgba(0,0,0,0.1)",
     border: "0.0625rem solid ${colors.neutral.lightGray}",
     transition: "transform 0.2s ease, box-shadow 0.2s ease",
-    ':hover': {
+    ":hover": {
       transform: "translateY(-2px)",
       boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.15)",
     },
@@ -140,3 +144,5 @@ const styles = {
     marginTop: spacing.sm,
   },
 };
+
+export default PatientList;

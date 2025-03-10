@@ -6,8 +6,8 @@ import { colors, typography, spacing, components } from "../theme";
 import "../styles/calculatorStyles.css"; // Import the CSS file
 
 export default function GFRCalculator({ onCalculationComplete }) {
+  // State -------------------------------------------------------------------
   const { user } = useUser();
-  const [userData, setUserData] = useState(null);
   const [creatinine, setCreatinine] = useState("");
   const [creatinineUnit, setCreatinineUnit] = useState("mg/dL");
   const [age, setAge] = useState("");
@@ -19,65 +19,87 @@ export default function GFRCalculator({ onCalculationComplete }) {
   const [pediatricMessage, setPediatricMessage] = useState("");
   const [calculating, setCalculating] = useState(false);
 
+  // Functions -------------------------------------------------------
   // Map ethnicity values from database to dropdown options
+  const mapGender = (dbGender) => {
+    if (!dbGender) return "";
+    return dbGender.toLowerCase();
+  };
+
   const mapEthnicity = (dbEthnicity) => {
     if (!dbEthnicity) return "";
-    
+
     const ethnicityMap = {
-      "black": "black",
-      "white": "white",
-      "asian": "asian",
-      "hispanic": "hispanic",
-      "caucasian": "caucasian",
-      "indian": "indian",
-      "latino": "latino",
-      "other": "other"
+      black: "black",
+      white: "white",
+      asian: "asian",
+      hispanic: "hispanic",
+      caucasian: "caucasian",
+      indian: "indian",
+      latino: "latino",
+      other: "other",
     };
-    
+
     return ethnicityMap[dbEthnicity.toLowerCase()] || "other";
   };
 
+  // Effects -----------------------------------------------------------------
   // Fetch user data and populate form fields
   useEffect(() => {
     if (user && user.isAuthenticated && user.userType === "patient") {
-      fetchUserData(user, setUserData)
-        .then((data) => {
-          if (data) {
-            // Calculate age from DOB if available
-            if (data.DOB) {
-              const dob = new Date(data.DOB);
-              const today = new Date();
-              let calculatedAge = today.getFullYear() - dob.getFullYear();
-              const monthDiff = today.getMonth() - dob.getMonth();
-              
-              if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-                calculatedAge--;
-              }
-              
-              setAge(calculatedAge.toString());
-            }
-            
-            // Set gender if available
-            if (data.Gender) {
-              setGender(data.Gender.toLowerCase());
-            }
-            
-            // Set ethnicity if available
-            if (data.Ethnicity) {
-              setEthnicity(mapEthnicity(data.Ethnicity));
+      console.log("Fetching user data for calculator...");
+      fetchUserData(
+        user,
+        (data) => {
+          console.log("User data received:", data);
+
+          // Calculate age from DOB if available
+          if (data.DOB) {
+            const dob = new Date(data.DOB);
+            const today = new Date();
+            let calculatedAge = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+              calculatedAge--;
             }
 
-            // Set clinician if available
-            if (data.ClinicianID) {
-              setClinicianID(data.ClinicianID);
-            }
+            setAge(calculatedAge.toString());
           }
-        })
-        .catch(error => {
+
+          // Set gender if available
+          if (data.Gender) {
+            const mappedGender = mapGender(data.Gender);
+            setGender(mappedGender);
+          }
+
+          // Set ethnicity if available
+          if (data.Ethnicity) {
+            const mappedEthnicity = mapEthnicity(data.Ethnicity);
+            setEthnicity(mappedEthnicity);
+          }
+
+          // Set clinician if available
+          if (data.ClinicianID) {
+            setClinicianID(data.ClinicianID);
+          }
+        },
+        null,
+        (error) => {
           console.error("Error loading user data for GFR calculator:", error);
-        });
+        }
+      );
     }
   }, [user]);
+
+  // Helpers -----------------------------------------------------------------
+  // Format CKD stage for database compatibility
+  const formatCKDStageForDatabase = (stageCode) => {
+    if (stageCode.startsWith("G")) {
+      return stageCode.substring(1);
+    }
+    return stageCode;
+  };
 
   const determineCKDStage = (egfrValue) => {
     if (egfrValue >= 90) return "G1";
@@ -100,6 +122,7 @@ export default function GFRCalculator({ onCalculationComplete }) {
     return stageNames[stageCode] || stageCode;
   };
 
+  // Handlers ----------------------------------------------------------------
   const handleCreatinineUnitChange = (e) => {
     const newUnit = e.target.value;
     let newCreatinine = parseFloat(creatinine);
@@ -152,15 +175,19 @@ export default function GFRCalculator({ onCalculationComplete }) {
 
     const currentDate = new Date().toISOString();
 
+    const dbGender = gender.charAt(0).toUpperCase() + gender.slice(1);
+    const dbEthnicity = ethnicity.charAt(0).toUpperCase() + ethnicity.slice(1);
+    const dbCKDStage = formatCKDStageForDatabase(stageCode);
+
     const dbCalculationData = {
       PatientID: user.userType === "patient" ? user.userId : "",
       ClinicianID: user.userType === "clinician" ? user.userId : clinianID,
       Age: ageValue,
-      Gender: gender,
-      Ethnicity: ethnicity,
+      Gender: dbGender,
+      Ethnicity: dbEthnicity,
       Creatinine: creatValue,
       eGFR: egfrValue.toString(),
-      CKD_Stage: stageCode,
+      CKD_Stage: dbCKDStage,
       CreatedAt: currentDate,
     };
 
@@ -196,12 +223,15 @@ export default function GFRCalculator({ onCalculationComplete }) {
     setCalculating(false);
   };
 
+  // View --------------------------------------------------------------------
   return (
     <div style={styles.calculator} className="calculator-form">
       <h2 style={styles.title}>eGFR Calculator</h2>
-      
+
       <div className="input-group" style={styles.inputGroup}>
-        <label htmlFor="creatinine" className="form-label" style={styles.label}>Creatinine:</label>
+        <label htmlFor="creatinine" className="form-label" style={styles.label}>
+          Creatinine:
+        </label>
         <div className="input-with-unit" style={styles.inputWithUnit}>
           <input
             id="creatinine"
@@ -213,7 +243,7 @@ export default function GFRCalculator({ onCalculationComplete }) {
             placeholder="Enter value"
             aria-label="Creatinine value"
           />
-          <select 
+          <select
             id="creatinineUnit"
             value={creatinineUnit}
             onChange={handleCreatinineUnitChange}
@@ -226,9 +256,11 @@ export default function GFRCalculator({ onCalculationComplete }) {
           </select>
         </div>
       </div>
-      
+
       <div className="input-group" style={styles.inputGroup}>
-        <label htmlFor="age" className="form-label" style={styles.label}>Age (years):</label>
+        <label htmlFor="age" className="form-label" style={styles.label}>
+          Age (years):
+        </label>
         <input
           id="age"
           type="number"
@@ -240,9 +272,11 @@ export default function GFRCalculator({ onCalculationComplete }) {
           aria-label="Age in years"
         />
       </div>
-      
+
       <div className="input-group" style={styles.inputGroup}>
-        <label htmlFor="gender" className="form-label" style={styles.label}>Gender:</label>
+        <label htmlFor="gender" className="form-label" style={styles.label}>
+          Gender:
+        </label>
         <select
           id="gender"
           value={gender}
@@ -256,9 +290,11 @@ export default function GFRCalculator({ onCalculationComplete }) {
           <option value="female">Female</option>
         </select>
       </div>
-      
+
       <div className="input-group" style={styles.inputGroup}>
-        <label htmlFor="ethnicity" className="form-label" style={styles.label}>Ethnicity:</label>
+        <label htmlFor="ethnicity" className="form-label" style={styles.label}>
+          Ethnicity:
+        </label>
         <select
           id="ethnicity"
           value={ethnicity}
@@ -278,10 +314,10 @@ export default function GFRCalculator({ onCalculationComplete }) {
           <option value="other">Other</option>
         </select>
       </div>
-      
-      <button 
-        onClick={calculateEGFR} 
-        disabled={calculating} 
+
+      <button
+        onClick={calculateEGFR}
+        disabled={calculating}
         style={styles.button}
         aria-busy={calculating}
       >
@@ -307,10 +343,6 @@ export default function GFRCalculator({ onCalculationComplete }) {
     </div>
   );
 }
-
-GFRCalculator.propTypes = {
-  onCalculationComplete: PropTypes.func,
-};
 
 const styles = {
   calculator: {
@@ -384,4 +416,8 @@ const styles = {
     fontSize: typography.fontSize.body,
     color: colors.primary.midnightBlue,
   },
+};
+
+GFRCalculator.propTypes = {
+  onCalculationComplete: PropTypes.func,
 };

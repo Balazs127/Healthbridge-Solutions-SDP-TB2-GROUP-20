@@ -6,11 +6,13 @@ import { fetchCalculations } from "../api/api";
 import { colors, typography, spacing } from "../theme";
 
 const Calculator = () => {
+  // State -------------------------------------------------------------------
   const { user } = useUser();
   const [calculationHistory, setCalculationHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Effects -----------------------------------------------------------------
   useEffect(() => {
     if (!user.isAuthenticated || user.userType !== "patient") {
       setLoading(false);
@@ -18,8 +20,7 @@ const Calculator = () => {
     }
 
     fetchCalculations(
-      "PatientID",
-      user.userId,
+      { PatientID: user.userId },
       setCalculationHistory,
       setLoading,
       setError,
@@ -27,6 +28,7 @@ const Calculator = () => {
     );
   }, [user.isAuthenticated, user.userId, user.userType]);
 
+  // Handlers ----------------------------------------------------------------
   const handleNewCalculation = (newCalculation) => {
     console.log("New calculation received in Calculator view:", newCalculation);
 
@@ -63,6 +65,7 @@ const Calculator = () => {
     });
   };
 
+  // View --------------------------------------------------------------------
   return (
     <section style={styles.section}>
       <GFRCalculator onCalculationComplete={handleNewCalculation} />
@@ -82,8 +85,6 @@ const Calculator = () => {
     </section>
   );
 };
-
-export default Calculator;
 
 const styles = {
   section: {
@@ -107,3 +108,5 @@ const styles = {
     fontSize: typography.fontSize.body,
   },
 };
+
+export default Calculator;

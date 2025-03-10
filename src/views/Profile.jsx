@@ -6,42 +6,50 @@ import ProfileCard from "../components/profile/ProfileCard";
 import AlertBanner from "../components/profile/AlertBanner";
 
 const Profile = () => {
+  // State -------------------------------------------------------------------
   const { user, userData, loading: userLoading, error: userError, updateUserData } = useUser();
-  const [calculations, setCalculations] = useState([]);
   const [alertNeeded, setAlertNeeded] = useState(false);
   const [calculationsLoading, setCalculationsLoading] = useState(false);
   const [calculationsError, setCalculationsError] = useState("");
 
+  // Effects -----------------------------------------------------------------
   // Only check eGFR calculations for patients
   useEffect(() => {
     if (!user.isAuthenticated || user.userType !== "patient") return;
-    
+
     setCalculationsLoading(true);
-    fetchCalculations("PatientID", user.userId, (data) => {
-      setCalculations(data);
 
-      if (data.length > 0) {
-        const sorted = data.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
-        const mostRecent = new Date(sorted[0].CreatedAt);
-        const now = new Date();
-        const diffInDays = (now - mostRecent) / (1000 * 60 * 60 * 24);
+    fetchCalculations(
+      { PatientID: user.userId },
+      (data) => {
+        if (data.length > 0) {
+          const sorted = data.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
+          const mostRecent = new Date(sorted[0].CreatedAt);
+          const now = new Date();
+          const diffInDays = (now - mostRecent) / (1000 * 60 * 60 * 24);
 
-        if (diffInDays > 90) {
-          setAlertNeeded(true);
+          if (diffInDays > 90) {
+            setAlertNeeded(true);
+          }
         }
-      }
-      setCalculationsLoading(false);
-    }, setCalculationsLoading, setCalculationsError, "Failed to load calculations").catch((err) => {
+        setCalculationsLoading(false);
+      },
+      setCalculationsLoading,
+      setCalculationsError,
+      "Failed to load calculations"
+    ).catch((err) => {
       console.error("Error in checking eGFR calculations:", err);
       setCalculationsLoading(false);
     });
   }, [user.isAuthenticated, user.userId, user.userType]);
 
+  // Handlers ----------------------------------------------------------------
   // Handle userData updates
   const handleUserDataUpdate = (newData) => {
     updateUserData(newData);
   };
 
+  // View --------------------------------------------------------------------
   // Show main loading state only when user data is loading
   if (userLoading) {
     return (
@@ -72,15 +80,13 @@ const Profile = () => {
       {user.userType === "patient" && !calculationsLoading && alertNeeded && (
         <AlertBanner message="Your most recent eGFR calculation is older than 3 months. Please check in." />
       )}
-      
+
       {/* Show calculations error if any */}
-      {calculationsError && (
-        <p style={ProfileStyles.errorText}>{calculationsError}</p>
-      )}
+      {calculationsError && <p style={ProfileStyles.errorText}>{calculationsError}</p>}
 
       {/* Always render the profile card once userData is available */}
       {userData && (
-        <ProfileCard 
+        <ProfileCard
           userData={userData}
           userType={user.userType}
           userId={user.userId}
