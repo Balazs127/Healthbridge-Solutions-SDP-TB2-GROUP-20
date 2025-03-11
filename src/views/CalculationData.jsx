@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { fetchCalculations, fetchPatientById } from "../api/api";
 import { colors, typography, spacing } from "../theme";
 import PropTypes from "prop-types";
+import CalculationResultsList from "../components/CalculationResultsList";
 
 const CalculationData = ({ isClinicianView = false }) => {
   // Hooks -------------------------------------------------------------------
@@ -42,7 +43,7 @@ const CalculationData = ({ isClinicianView = false }) => {
   // Get patient name for display
   const getPatientName = () => {
     if (!isClinicianView) {
-      return "Your GFR Calculation Records";
+      return "Your eGFR Calculation History";
     }
 
     if (loadingPatient) {
@@ -50,72 +51,47 @@ const CalculationData = ({ isClinicianView = false }) => {
     }
 
     if (!patientDetails) {
-      return `GFR Records for Patient ${patientId || "Unknown"}`;
+      return `eGFR History for Patient ${patientId || "Unknown"}`;
     }
 
-    return `GFR Records for ${patientDetails.FirstName} ${patientDetails.LastName}`;
+    return `eGFR History for ${patientDetails.FirstName} ${patientDetails.LastName}`;
   };
 
   // View --------------------------------------------------------------------
   return (
     <section style={styles.section}>
-      {isClinicianView && (
-        <div style={styles.backButtonContainer}>
-          <button onClick={() => navigate("/patientList")} style={styles.backButton}>
-            &larr; Back to Patient List
-          </button>
-        </div>
-      )}
+      <div style={styles.headerContainer}>
+        {isClinicianView && (
+          <div style={styles.backButtonContainer}>
+            <button onClick={() => navigate("/patientList")} style={styles.backButton}>
+              &larr; Back to Patient List
+            </button>
+          </div>
+        )}
 
-      <h2 style={styles.h2}>{getPatientName()}</h2>
+        <h2 style={styles.h2}>{getPatientName()}</h2>
+      </div>
 
       {loading ? (
-        <p>Loading data...</p>
+        <div style={styles.loadingIndicator}>
+          <p>Loading calculation history...</p>
+          <div style={styles.spinner}></div>
+        </div>
       ) : error ? (
-        <p style={styles.errorMessage}>{error}</p>
+        <div style={styles.errorContainer}>
+          <p style={styles.errorMessage}>{error}</p>
+        </div>
       ) : mongoData.length === 0 ? (
-        <p>No records found.</p>
+        <div style={styles.emptyState}>
+          <p>No calculation history found.</p>
+          {!isClinicianView && (
+            <button onClick={() => navigate("/calculator")} style={styles.newCalculationButton}>
+              Make a New Calculation
+            </button>
+          )}
+        </div>
       ) : (
-        <>
-          <p style={styles.recordCount}>
-            {mongoData.length} record{mongoData.length !== 1 ? "s" : ""} found
-          </p>
-          <ul style={styles.dataList}>
-            {mongoData.map((item, index) => (
-              <li key={index} style={styles.dataItem}>
-                <div style={styles.patientInfo}>
-                  <p>
-                    <strong>Patient ID:</strong> {item.PatientID}
-                  </p>
-                  <p>
-                    <strong>Clinician ID:</strong> {item.ClinicianID}
-                  </p>
-                  <p>
-                    <strong>Age:</strong> {item.Age}
-                  </p>
-                  <p>
-                    <strong>Gender:</strong> {item.Gender}
-                  </p>
-                  <p>
-                    <strong>Ethnicity:</strong> {item.Ethnicity}
-                  </p>
-                  <p>
-                    <strong>Creatinine:</strong> {item.Creatinine}
-                  </p>
-                  <p>
-                    <strong>eGFR:</strong> {item.eGFR}
-                  </p>
-                  <p>
-                    <strong>CKD Stage:</strong> {item.CKD_Stage}
-                  </p>
-                  <p>
-                    <strong>Created At:</strong> {new Date(item.CreatedAt).toLocaleString()}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </>
+        <CalculationResultsList results={mongoData} />
       )}
     </section>
   );
@@ -126,41 +102,20 @@ const styles = {
     marginBottom: spacing.lg,
     padding: spacing.sm,
   },
+  headerContainer: {
+    marginBottom: spacing.md,
+  },
   h2: {
     fontSize: typography.fontSize.h2,
     fontWeight: typography.fontWeight.semiBold,
-    marginTop: spacing.lg,
     color: colors.primary.midnightBlue,
-  },
-  recordCount: {
-    marginBottom: spacing.sm,
-    fontSize: typography.fontSize.body,
-    color: colors.neutral.mediumGray,
-  },
-  dataList: {
-    listStyle: "none",
-    padding: 0,
-  },
-  dataItem: {
-    backgroundColor: colors.neutral.white,
-    padding: spacing.md,
-    margin: `${spacing.sm} 0`,
-    borderRadius: "0.5rem", // 8px
-    boxShadow: "0 0.125rem 0.25rem rgba(0,0,0,0.1)", // 0 2px 4px
-    border: `0.0625rem solid ${colors.neutral.lightGray}`, // 1px
-  },
-  patientInfo: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(12.5rem, 1fr))", // 200px
-    gap: spacing.sm,
-    color: colors.neutral.darkGray,
-    fontSize: typography.fontSize.body,
-  },
-  backButtonContainer: {
     marginBottom: spacing.md,
   },
+  backButtonContainer: {
+    marginBottom: spacing.sm,
+  },
   backButton: {
-    backgroundColor: colors.neutral.white,
+    backgroundColor: "transparent",
     border: `1px solid ${colors.primary.blue}`,
     color: colors.primary.blue,
     padding: `${spacing.xs} ${spacing.sm}`,
@@ -168,10 +123,47 @@ const styles = {
     cursor: "pointer",
     fontSize: typography.fontSize.body,
     fontWeight: typography.fontWeight.semiBold,
+    transition: "background-color 0.2s ease",
+  },
+  errorContainer: {
+    backgroundColor: "rgba(231, 70, 70, 0.1)",
+    padding: spacing.md,
+    borderRadius: "0.5rem",
+    borderLeft: `4px solid ${colors.semantic.error}`,
   },
   errorMessage: {
     color: colors.semantic.error,
     fontWeight: typography.fontWeight.semiBold,
+    margin: 0,
+  },
+  loadingIndicator: {
+    textAlign: "center",
+    padding: spacing.lg,
+  },
+  spinner: {
+    border: `4px solid ${colors.neutral.lightGray}`,
+    borderTop: `4px solid ${colors.primary.blue}`,
+    borderRadius: "50%",
+    width: "30px",
+    height: "30px",
+    animation: "spin 1s linear infinite",
+    margin: "0 auto",
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: spacing.lg,
+    color: colors.neutral.darkGray,
+  },
+  newCalculationButton: {
+    marginTop: spacing.sm,
+    padding: `${spacing.xs} ${spacing.md}`,
+    backgroundColor: colors.primary.blue,
+    color: colors.neutral.white,
+    borderRadius: "0.25rem",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: typography.fontWeight.semiBold,
+    fontSize: typography.fontSize.body,
   },
 };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
 import { fetchPatientsByClinicianId } from "../api/api";
 import { colors, typography, spacing } from "../theme";
@@ -10,6 +10,7 @@ const PatientList = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // Effects -----------------------------------------------------------------
   useEffect(() => {
@@ -26,10 +27,21 @@ const PatientList = () => {
     console.log("Patient data received:", patients);
   }, [patients]);
 
+  // Functions ---------------------------------------------------------------
+  const handleBulkImportClick = () => {
+    navigate("/bulkCalculation");
+  };
+
   // View --------------------------------------------------------------------
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Patients Under Your Care</h2>
+
+      <div style={styles.actionsContainer}>
+        <button onClick={handleBulkImportClick} style={styles.bulkImportButton}>
+          Import CSV for Bulk eGFR Calculation
+        </button>
+      </div>
 
       {loading ? (
         <p>Loading patients...</p>
@@ -142,6 +154,21 @@ const styles = {
     textAlign: "center",
     fontWeight: typography.fontWeight.semiBold,
     marginTop: spacing.sm,
+  },
+  actionsContainer: {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginBottom: spacing.md,
+  },
+  bulkImportButton: {
+    backgroundColor: colors.primary.blue,
+    color: colors.neutral.white,
+    padding: `${spacing.xs} ${spacing.md}`,
+    borderRadius: "0.25rem",
+    border: "none",
+    cursor: "pointer",
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.semiBold,
   },
 };
 

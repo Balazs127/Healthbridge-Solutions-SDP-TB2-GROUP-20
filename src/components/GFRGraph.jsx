@@ -14,8 +14,8 @@ import { colors, typography, spacing } from "../theme";
 const calculateStage = (eGFR) => {
   if (eGFR > 90) return "G1";
   if (eGFR >= 60 && eGFR <= 89) return "G2";
-  if (eGFR >= 45 && eGFR <= 59) return "G3a";
-  if (eGFR >= 30 && eGFR <= 44) return "G3b";
+  if (eGFR >= 45 && eGFR <= 59) return "G3A";
+  if (eGFR >= 30 && eGFR <= 44) return "G3B";
   if (eGFR >= 15 && eGFR <= 29) return "G4";
   if (eGFR < 15) return "G5";
   return "Unknown";
@@ -55,9 +55,9 @@ const GFRGraph = ({ data }) => {
         return "#4caf50"; // Normal
       case "G2":
         return "#8bc34a"; // Mildly decreased
-      case "G3a":
+      case "G3A":
         return "#ffeb3b"; // Mildly to moderately decreased
-      case "G3b":
+      case "G3B":
         return "#ff9800"; // Moderately to severely decreased
       case "G4":
         return "#ff5722"; // Severely decreased
@@ -150,11 +150,11 @@ const GFRGraph = ({ data }) => {
         </div>
         <div style={styles.stageLegend}>
           <span style={{ ...styles.stageColor, backgroundColor: "#ffeb3b" }}></span>
-          <span>G3a: Mildly to moderately decreased (45-59)</span>
+          <span>G3A: Mildly to moderately decreased (45-59)</span>
         </div>
         <div style={styles.stageLegend}>
           <span style={{ ...styles.stageColor, backgroundColor: "#ff9800" }}></span>
-          <span>G3b: Moderately to severely decreased (30-44)</span>
+          <span>G3B: Moderately to severely decreased (30-44)</span>
         </div>
         <div style={styles.stageLegend}>
           <span style={{ ...styles.stageColor, backgroundColor: "#ff5722" }}></span>

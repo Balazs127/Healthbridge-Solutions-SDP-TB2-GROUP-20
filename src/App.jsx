@@ -3,6 +3,7 @@ import Home from "./views/Home";
 import Calculator from "./views/Calculator";
 import CalculationData from "./views/CalculationData";
 import PatientList from "./views/PatientList";
+import BulkCalculation from "./views/BulkCalculation";
 import Profile from "./views/Profile";
 import Login from "./views/Login";
 import { UserProvider } from "./contexts/UserProvider";
@@ -36,10 +37,10 @@ function AppContent() {
     // Initial check
     checkScreenWidth();
 
-    window.addEventListener('resize', checkScreenWidth);
+    window.addEventListener("resize", checkScreenWidth);
 
     // Clean up
-    return () => window.removeEventListener('resize', checkScreenWidth);
+    return () => window.removeEventListener("resize", checkScreenWidth);
   }, []);
 
   const handleLogout = () => {
@@ -54,10 +55,10 @@ function AppContent() {
   const navLinks = [
     { to: "/", label: "Home", protected: false },
     { to: "/calculator", label: "GFR Calculator", protected: false },
-    { 
-      to: user.userType === "clinician" ? "/patientList" : "/calculationData", 
-      label: user.userType === "clinician" ? "Patient View" : "Calculation Data", 
-      protected: true 
+    {
+      to: user.userType === "clinician" ? "/patientList" : "/calculationData",
+      label: user.userType === "clinician" ? "Patient View" : "Calculation Data",
+      protected: true,
     },
     { to: "/profile", label: "Profile", protected: true },
   ];
@@ -67,11 +68,11 @@ function AppContent() {
       <header style={styles.header}>
         <nav style={styles.nav}>
           <h1 style={styles.h1}>Healthbridge Solutions</h1>
-          
+
           {isMobile ? (
             <>
-              <button 
-                style={styles.hamburger} 
+              <button
+                style={styles.hamburger}
                 onClick={toggleMenu}
                 aria-expanded={menuOpen}
                 aria-label="Toggle navigation menu"
@@ -80,31 +81,32 @@ function AppContent() {
                 <span style={styles.hamburgerLine}></span>
                 <span style={styles.hamburgerLine}></span>
               </button>
-              
+
               {menuOpen && (
                 <div style={styles.mobileMenu}>
                   <ul style={styles.mobileNavList}>
-                    {navLinks.map(link => (
-                      (!link.protected || user.isAuthenticated) && (
-                        <li key={link.to} style={styles.mobileNavItem}>
-                          <Link 
-                            to={link.to} 
-                            style={styles.mobileNavLink}
-                            onClick={() => setMenuOpen(false)}
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      )
-                    ))}
+                    {navLinks.map(
+                      (link) =>
+                        (!link.protected || user.isAuthenticated) && (
+                          <li key={link.to} style={styles.mobileNavItem}>
+                            <Link
+                              to={link.to}
+                              style={styles.mobileNavLink}
+                              onClick={() => setMenuOpen(false)}
+                            >
+                              {link.label}
+                            </Link>
+                          </li>
+                        )
+                    )}
                     <li style={styles.mobileNavItem}>
                       {user.isAuthenticated ? (
                         <button onClick={handleLogout} style={styles.mobileLogoutButton}>
                           Logout ({user.userType})
                         </button>
                       ) : (
-                        <Link 
-                          to="/login" 
+                        <Link
+                          to="/login"
                           style={styles.mobileNavLink}
                           onClick={() => setMenuOpen(false)}
                         >
@@ -118,15 +120,16 @@ function AppContent() {
             </>
           ) : (
             <ul style={styles.navList}>
-              {navLinks.map(link => (
-                (!link.protected || user.isAuthenticated) && (
-                  <li key={link.to} style={styles.navItem}>
-                    <Link to={link.to} style={styles.navLink}>
-                      {link.label}
-                    </Link>
-                  </li>
-                )
-              ))}
+              {navLinks.map(
+                (link) =>
+                  (!link.protected || user.isAuthenticated) && (
+                    <li key={link.to} style={styles.navItem}>
+                      <Link to={link.to} style={styles.navLink}>
+                        {link.label}
+                      </Link>
+                    </li>
+                  )
+              )}
               <li style={styles.navItem}>
                 {user.isAuthenticated ? (
                   <button onClick={handleLogout} style={styles.logoutButton}>
@@ -168,6 +171,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <PatientList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bulkCalculation"
+            element={
+              <ProtectedRoute>
+                <BulkCalculation />
               </ProtectedRoute>
             }
           />
@@ -255,8 +266,8 @@ const styles = {
     alignItems: "center",
     height: "100%",
     transition: "background-color 0.2s ease",
-    ':hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    ":hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
     },
   },
   logoutButton: {
@@ -273,8 +284,8 @@ const styles = {
     height: "100%",
     textDecoration: "none",
     transition: "background-color 0.2s ease",
-    ':hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    ":hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
     },
   },
   main: {

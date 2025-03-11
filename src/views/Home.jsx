@@ -9,8 +9,10 @@ const Home = () => {
   const handleGetStartedClick = () => {
     if (!user.isAuthenticated) {
       navigate("/login");
-    } else {
+    } else if (user.userType === "patient") {
       navigate("/calculator");
+    } else {
+      navigate("/patientList");
     }
   };
 
@@ -29,13 +31,21 @@ const Home = () => {
     return `Welcome, ${user.userType === "patient" ? "Patient" : "Clinician"} ${user.userId}`;
   };
 
+  // Determine button text based on user type
+  const getButtonText = () => {
+    if (!user.isAuthenticated) {
+      return "Get Started";
+    }
+    return user.userType === "patient" ? "Use Calculator" : "View Patients";
+  };
+
   return (
     <div style={styles.container}>
       <section style={styles.hero}>
         <h1 style={styles.heroTitle}>{getWelcomeMessage()}</h1>
         <p style={styles.heroSubtitle}>Your GFR calculation resource</p>
         <button style={styles.heroButton} onClick={handleGetStartedClick}>
-          {user.isAuthenticated ? "Use Calculator" : "Get Started"}
+          {getButtonText()}
         </button>
       </section>
       <section style={styles.section}>

@@ -104,8 +104,8 @@ export default function GFRCalculator({ onCalculationComplete }) {
   const determineCKDStage = (egfrValue) => {
     if (egfrValue >= 90) return "G1";
     if (egfrValue >= 60) return "G2";
-    if (egfrValue >= 45) return "G3a";
-    if (egfrValue >= 30) return "G3b";
+    if (egfrValue >= 45) return "G3A";
+    if (egfrValue >= 30) return "G3B";
     if (egfrValue >= 15) return "G4";
     return "G5";
   };
@@ -114,8 +114,8 @@ export default function GFRCalculator({ onCalculationComplete }) {
     const stageNames = {
       G1: "Stage 1 (Normal or High)",
       G2: "Stage 2 (Mildly Decreased)",
-      G3a: "Stage 3A (Mild to Moderate Decrease)",
-      G3b: "Stage 3B (Moderate to Severe Decrease)",
+      G3A: "Stage 3A (Mild to Moderate Decrease)",
+      G3B: "Stage 3B (Moderate to Severe Decrease)",
       G4: "Stage 4 (Severely Decreased)",
       G5: "Stage 5 (Kidney Failure)",
     };
