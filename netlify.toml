@@ -1,9 +1,14 @@
 # Remove this line after restart
  
-<IfModule mod_headers.c>
-    Header unset Server
-    Header set Server "Healthbridge"
-</IfModule>
+[[headers]]
+  for = "/*"
+  [headers.values]
+   X-Frame-Options = "DENY"
+   X-XSS-Protection = "1; mode=block"
+   X-Content-Type-Options = "nosniff"
+   Referrer-Policy = "strict-origin-when-cross-origin"
+   Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+   Set-Cookie = "session=abc123; Secure; HttpOnly; SameSite=Strict"
  
 <IfModule mod_rewrite.c>
   # Redirect all HTTP traffic to HTTPS
