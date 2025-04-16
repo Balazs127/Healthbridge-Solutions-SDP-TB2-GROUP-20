@@ -6,4 +6,6 @@
    X-Content-Type-Options = "nosniff"
    Referrer-Policy = "strict-origin-when-cross-origin"
    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+   Content-Security-Policy = "default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self';"
+   Permissions-Policy = "geolocation=(), microphone=(), camera=()"
    Set-Cookie = "session=abc123; Secure; HttpOnly; SameSite=Strict"
