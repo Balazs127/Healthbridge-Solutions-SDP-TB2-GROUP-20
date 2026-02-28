@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://balazskis.com/healthbridge/api";
+const API_BASE_URL = "https://healthbridge.balazskis.com/api";
 
 const get = (endpoint, params = {}) => {
   return axios.get(`${API_BASE_URL}/${endpoint}`, { params });
@@ -39,7 +39,7 @@ const handleApiResponse = (
   setError = null,
   errorMessage = "API request failed",
   logLabel = "API data",
-  asArray = false
+  asArray = false,
 ) => {
   if (setLoading) setLoading(true);
 
@@ -53,8 +53,8 @@ const handleApiResponse = (
           const normalizedData = Array.isArray(response.data)
             ? response.data
             : response.data
-            ? [response.data]
-            : [];
+              ? [response.data]
+              : [];
           setData(normalizedData);
         } else {
           setData(response.data);
@@ -77,7 +77,7 @@ const fetchCalculations = (
   setData,
   setLoading,
   setError,
-  errorMessage = "Failed to load data"
+  errorMessage = "Failed to load data",
 ) => {
   console.log(`Fetching calculations with filters:`, filters);
 
@@ -95,7 +95,7 @@ const fetchCalculations = (
     setError,
     errorMessage,
     "Calculations",
-    true // Always normalize as array
+    true, // Always normalize as array
   );
 };
 
@@ -111,7 +111,7 @@ const fetchUserData = (user, setUserData, setLoading = null, setError = null) =>
     setLoading,
     setError,
     `Failed to load ${user.userType} data`,
-    `${user.userType} data`
+    `${user.userType} data`,
   );
 };
 
@@ -120,7 +120,7 @@ const fetchPatientsByClinicianId = (
   setData,
   setLoading,
   setError,
-  errorMessage = "Failed to load patients"
+  errorMessage = "Failed to load patients",
 ) => {
   return handleApiResponse(
     get("patientlogin", { ClinicianID: clinicianId }),
@@ -129,7 +129,7 @@ const fetchPatientsByClinicianId = (
     setError,
     errorMessage,
     "Patients list",
-    true // Always normalize as array
+    true, // Always normalize as array
   );
 };
 
@@ -138,7 +138,7 @@ const fetchPatientById = (
   setData,
   setLoading,
   setError,
-  errorMessage = "Failed to load patient details"
+  errorMessage = "Failed to load patient details",
 ) => {
   return handleApiResponse(
     get(`patientlogin/${patientId}`),
@@ -146,7 +146,7 @@ const fetchPatientById = (
     setLoading,
     setError,
     errorMessage,
-    "Patient details"
+    "Patient details",
   );
 };
 
